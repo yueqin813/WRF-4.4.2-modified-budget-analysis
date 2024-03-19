@@ -1,3 +1,7 @@
+!This code was adapted by code from N. Moisseeva. Her original files, and instructions for using the code, can be found at https://open.library.ubc.ca/soa/cIRcle/collections/ubctheses/24/items/1.0165884.
+!These additions are marked by the initials NM. Further modifications were made by E. Potter in 2017, and are marked by the initials EP. They were used in version 4.4.2 of the WRF code.
+!This module is in the dyn_em directory
+
 !WRF:MEDIATION_LAYER:SOLVER
 
 #define BENCH_START(A)
@@ -14,6 +18,11 @@ CONTAINS
                              , scalar , scalar_tend             &
                              , fdda3d, fdda2d                   &
                              , ru_tendf, rv_tendf               &
+                             , ru_tend_hdiff, ru_tend_phys                 & !line added EP 2017
+                             , rv_tend_hdiff, rv_tend_phys                 & !line added EP 2017
+                             , rw_tend_hdiff      &
+                             , t_tend_hdiff       &
+                             , t_tend_phys, t_tend_phys_BL, t_tend_phys_rad                   & !line added EP 2017
                              , rw_tendf, t_tendf                &
                              , ph_tendf, mu_tendf               &
                              , tke_tend                         &
@@ -108,10 +117,19 @@ CONTAINS
     REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: t8w
 
     REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: ru_tendf
+    REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: ru_tend_hdiff !line added EP 2017
+    REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: ru_tend_phys !line added EP 2017
     REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: rv_tendf
+    REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: rv_tend_hdiff !line added EP 2017
+    REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: rv_tend_phys !line added EP 2017
     REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: rw_tendf
+    REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: rw_tend_hdiff !line added EP 2017
     REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: ph_tendf
     REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: t_tendf
+    REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: t_tend_hdiff !line added EP 2017
+    REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: t_tend_phys !line added EP 2017
+    REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: t_tend_phys_BL !line added EP 2017
+    REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: t_tend_phys_rad !line added EP 2017
     REAL    ,DIMENSION(ims:ime,kms:kme,jms:jme), INTENT(INOUT) :: tke_tend
 
     REAL    ,DIMENSION(ims:ime,jms:jme), INTENT(INOUT) :: mu_tendf
@@ -791,6 +809,7 @@ BENCH_START(update_phy_ten_tim)
          ENDIF
 #endif
          CALL update_phy_ten(ph_tendf,t_tendf, ru_tendf, rv_tendf,moist_tend ,&
+                           ru_tend_phys, rv_tend_phys, t_tend_phys, t_tend_phys_BL, t_tend_phys_rad, & !line added EP
                            scalar_tend, mu_tendf,                           &
                            grid%rthraten,grid%rthblten,grid%rthcuten,grid%rthshten, &
                            grid%rublten,grid%rucuten,grid%rushten,          &
@@ -1084,6 +1103,7 @@ BENCH_START(hor_diff_tim)
 
            CALL wrf_debug ( 200 , ' call horizontal_diffusion_2' )
            CALL horizontal_diffusion_2( t_tendf, ru_tendf, rv_tendf, rw_tendf, &
+                                      ru_tend_hdiff, rv_tend_hdiff, rw_tend_hdiff, t_tend_hdiff, & !added horizontal diffusion EP
                                       tke_tend,                              &
                                       moist_tend, num_moist,                  &
                                       chem_tend, num_chem,                   &

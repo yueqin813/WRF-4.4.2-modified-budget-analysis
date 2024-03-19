@@ -30,8 +30,8 @@ MODULE module_physics_addtendc
 
 CONTAINS
 
-SUBROUTINE update_phy_ten(rph_tendf,rt_tendf,ru_tendf,rv_tendf,moist_tendf, ru_tend_phys, rv_tend_phys, &
-                      t_tend_phys, t_tend_phys_BL, t_tend_phys_rad,  & !added line for horizontal physics EP
+SUBROUTINE update_phy_ten(rph_tendf,rt_tendf,ru_tendf,rv_tendf,moist_tendf, &
+                     ru_tend_phys, rv_tend_phys, t_tend_phys, t_tend_phys_BL, t_tend_phys_rad,  & !added line for horizontal physics EP
                      scalar_tendf,mu_tendf,                                &
                       RTHRATEN,RTHBLTEN,RTHCUTEN,RTHSHTEN,                  &
                       RUBLTEN,RUCUTEN,RUSHTEN,                              &

@@ -1,6 +1,9 @@
 
 ! WRF:MODEL_LAYER:PHYSICS
 
+!This code was adapted by code from N. Moisseeva. Her original files, and instructions for using the code, can be found at https://open.library.ubc.ca/soa/cIRcle/collections/ubctheses/24/items/1.0165884.
+!These additions are marked by the initials NM. Further modifications were made by E. Potter in 2017, and are marked by the initials EP. They were used in version 4.4.2 of the WRF code.
+!This module is in the dyn_em directory
     MODULE module_diffusion_em
 
     USE module_bc, only: set_physical_bc3d, set_physical_bc2d ! XZ
@@ -2861,7 +2864,8 @@ END SUBROUTINE smag2d_km
 !=======================================================================
 !=======================================================================
 
-SUBROUTINE horizontal_diffusion_2 ( rt_tendf, ru_tendf, rv_tendf, rw_tendf,    &
+SUBROUTINE horizontal_diffusion_2 ( rt_tendf, ru_tendf, rv_tendf, rw_tendf,  &
+                                    ru_tend_hdiff, rv_tend_hdiff, rw_tend_hdiff, t_tend_hdiff,  & !added line for horizontal diffusion EP
                                     tke_tendf,                                 &
                                     moist_tendf, n_moist,                      &
                                     chem_tendf, n_chem,                        &
@@ -2912,7 +2916,11 @@ SUBROUTINE horizontal_diffusion_2 ( rt_tendf, ru_tendf, rv_tendf, rw_tendf,    &
                                                                  ru_tendf,&
                                                                  rv_tendf,&
                                                                  rw_tendf,&
-                                                                tke_tendf
+                                                                 ru_tend_hdiff,& !added u (EP)
+                                                                 rv_tend_hdiff,& !added v (EP)
+                                                                 rw_tend_hdiff,& !added w (EP)
+                                                                 t_tend_hdiff,& !added t (EP)
+                                                                 tke_tendf
   
    REAL , DIMENSION( ims:ime, kms:kme, jms:jme, n_moist),                 &
           INTENT(INOUT) ::                                    moist_tendf
@@ -2964,7 +2972,7 @@ SUBROUTINE horizontal_diffusion_2 ( rt_tendf, ru_tendf, rv_tendf, rw_tendf,    &
    REAL , DIMENSION(ims:ime, kms:kme, jms:jme, n_nba_mij), INTENT(INOUT) &
    :: nba_mij
 
-! LOCAL VARS
+   REAL , DIMENSION( ims:ime , kms:kme, jms:jme  ) :: ru_tendf_old, rv_tendf_old, rw_tendf_old, t_tendf_old !defining new variables (EP)
 
    INTEGER :: im, ic, is
 
@@ -2976,8 +2984,9 @@ SUBROUTINE horizontal_diffusion_2 ( rt_tendf, ru_tendf, rv_tendf, rw_tendf,    &
 !-----------------------------------------------------------------------
 ! Call diffusion subroutines.
 
-    CALL horizontal_diffusion_u_2( ru_tendf, config_flags,                 &
-                                   defor11, defor12, div,                  &
+    ru_tendf_old = ru_tendf    !EP: added line record current ru_tendency
+    CALL horizontal_diffusion_u_2( ru_tendf, config_flags,         &   
+                                  defor11, defor12, div,                  &
                                    nba_mij, n_nba_mij,                     &
                                    tke(ims,kms,jms),                       &
                                    msfux, msfuy, xkmh, rdx, rdy, fnm, fnp, &
@@ -2985,9 +2994,11 @@ SUBROUTINE horizontal_diffusion_2 ( rt_tendf, ru_tendf, rv_tendf, rw_tendf,    &
                                    ids, ide, jds, jde, kds, kde,           &
                                    ims, ime, jms, jme, kms, kme,           &
                                    its, ite, jts, jte, kts, kte           )
+    ru_tend_hdiff =ru_tendf-ru_tendf_old                                !EP: added line for ru_tend_hdiff
 
-    CALL horizontal_diffusion_v_2( rv_tendf, config_flags,                 &
-                                   defor12, defor22, div,                  &
+    rv_tendf_old = rv_tendf    !EP: added line record current rv_tendency
+    CALL horizontal_diffusion_v_2( rv_tendf, config_flags,             &
+                                  defor12, defor22, div,                  &
                                    nba_mij, n_nba_mij,                     &
                                    tke(ims,kms,jms),                       &
                                    msfvx, msfvy, xkmh, rdx, rdy, fnm, fnp, &
@@ -2995,9 +3006,12 @@ SUBROUTINE horizontal_diffusion_2 ( rt_tendf, ru_tendf, rv_tendf, rw_tendf,    &
                                    ids, ide, jds, jde, kds, kde,           &
                                    ims, ime, jms, jme, kms, kme,           &
                                    its, ite, jts, jte, kts, kte           )
+    rv_tend_hdiff =rv_tendf-rv_tendf_old                                !EP: added line for rv_tend_hdiff
 
-    CALL horizontal_diffusion_w_2( rw_tendf, config_flags,                 &
-                                   defor13, defor23, div,                  &
+
+    rw_tendf_old = rw_tendf    !EP: added line record current rw_tendency
+    CALL horizontal_diffusion_w_2( rw_tendf, config_flags,             &
+                                  defor13, defor23, div,                  &
                                    nba_mij, n_nba_mij,                     &
                                    tke(ims,kms,jms),                       &
                                    msftx, msfty, xkmv, rdx, rdy, fnm, fnp, &
@@ -3005,9 +3019,10 @@ SUBROUTINE horizontal_diffusion_2 ( rt_tendf, ru_tendf, rv_tendf, rw_tendf,    &
                                    ids, ide, jds, jde, kds, kde,           &
                                    ims, ime, jms, jme, kms, kme,           &
                                    its, ite, jts, jte, kts, kte           )
+    rw_tend_hdiff =rw_tendf-rw_tendf_old                                !EP: added line for rw_tend_hdiff
 
-    CALL horizontal_diffusion_s  ( rt_tendf, config_flags,                 &
-                                   thp,                                    &
+    t_tendf_old = rt_tendf    !EP: added line record current t_tendency
+    CALL horizontal_diffusion_s  ( rt_tendf, config_flags, thp,        &
                                    msftx, msfty, msfux, msfuy,             &
                                    msfvx, msfvy, xkhh, rdx, rdy,           &
                                    fnm, fnp, cf1, cf2, cf3,                &
@@ -3016,6 +3031,7 @@ SUBROUTINE horizontal_diffusion_2 ( rt_tendf, ru_tendf, rv_tendf, rw_tendf,    &
                                    ids, ide, jds, jde, kds, kde,           &
                                    ims, ime, jms, jme, kms, kme,           &
                                    its, ite, jts, jte, kts, kte           )
+    t_tend_hdiff =rt_tendf-t_tendf_old                                !EP: added line for t_tend_hdiff
 
     IF ( ((km_opt .eq. 2) .and. (.not.config_flags%tke_mix2_off))          & !XZ
         .or. (km_opt .eq. 5) )                                             & !XZ
@@ -8480,3 +8496,4 @@ END SUBROUTINE phy_bc
 
 !=======================================================================
 !=======================================================================
+

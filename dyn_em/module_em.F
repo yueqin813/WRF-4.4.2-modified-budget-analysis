@@ -1,6 +1,8 @@
 
 !WRF:MODEL_LAYER:DYNAMICS
-!
+!This code was adapted by code from N. Moisseeva. Her original files, and instructions for using the code, can be found at https://open.library.ubc.ca/soa/cIRcle/collections/ubctheses/24/items/1.0165884.
+!These additions are marked by the initials NM. Further modifications were made by E. Potter in 2017, and are marked by the initials EP. They were used in version 4.2.2 of the WRF code.
+!This module is found in the dyn_em directory
 
 MODULE module_em
 
@@ -189,6 +191,10 @@ END SUBROUTINE rk_step_prep
 
 SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                          ru_tend, rv_tend, rw_tend, ph_tend, t_tend,      &
+                         ru_tend_cor, ru_tend_adv, ru_tend_pgf, ru_tend_curv, ru_tend_6thdiff,       & !added line for u (NM) also 6thdiff (EP)
+                         rv_tend_cor, rv_tend_adv, rv_tend_pgf, rv_tend_curv, rv_tend_6thdiff,       & !added line for v (NM) also 6thdiff (EP)
+                         rw_tend_cor, rw_tend_adv, rw_tend_buoy, rw_tend_curv, rw_tend_6thdiff,       & !added line for w (EP)
+                         t_tend_adv, t_tend_6thdiff,                      &               !added line for t (EP)
                          ru_tendf, rv_tendf, rw_tendf, ph_tendf, t_tendf, &
                          mu_tend, u_save, v_save, w_save, ph_save,        &
                          t_save, mu_save, RTHFTEN,                        &
@@ -263,6 +269,23 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                                                          rv_tend, &
                                                          rw_tend, &
                                                          t_tend,  &
+                                                         ru_tend_cor, & !added u
+                                                         ru_tend_adv, & !added u
+                                                         ru_tend_pgf, & !added u
+                                                         ru_tend_curv, & !added u
+                                                         ru_tend_6thdiff, & !added u (EP)
+                                                         rv_tend_cor, & !added v
+                                                         rv_tend_adv, & !added v
+                                                         rv_tend_pgf, & !added v
+                                                         rv_tend_curv, & !added v
+                                                         rv_tend_6thdiff, & !added v (EP)
+                                                         rw_tend_cor, & !added w
+                                                         rw_tend_adv, & !added w
+                                                         rw_tend_buoy, & !added w
+                                                         rw_tend_curv, & !added w
+                                                         rw_tend_6thdiff, & !added w (EP)
+                                                         t_tend_adv, & !added t (EP)
+                                                         t_tend_6thdiff, & !added t (EP)
                                                          ph_tend, &
                                                          RTHFTEN, &
                                                           u_save, &
@@ -339,6 +362,7 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
    INTEGER :: time_step
    INTEGER :: rk_order
    REAL    :: dt_step
+   REAL , DIMENSION( ims:ime , kms:kme, jms:jme  ) :: ru_tend_old, rv_tend_old, rw_tend_old, t_tend_old !defining new variables (NM+EP)
 
 ! IEVA declarations
    REAL , DIMENSION( ims:ime, kms:kme, jms:jme ) :: wwE, wwI  
@@ -501,6 +525,7 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                           its, ite, jts, jte, kts, kte )
 
    ELSE
+     ru_tend_old = ru_tend                           !!NM: added line record current ru_tendency   
 
      CALL advect_u ( u, u , ru_tend, ru, rv, wwE,  &
                      c1h, c2h,                     &
@@ -511,6 +536,7 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                      ids, ide, jds, jde, kds, kde, &
                      ims, ime, jms, jme, kms, kme, &
                      its, ite, jts, jte, kts, kte )
+     ru_tend_adv = ru_tend - ru_tend_old             !!NM: added line for u_adv
    ENDIF
 
    IF( ieva ) THEN
@@ -542,7 +568,7 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                            its, ite, jts, jte, kts, kte )
 
    ELSE
-
+     rv_tend_old = rv_tend                              !!NM: added line record current rv_tendency
      CALL advect_v ( v, v , rv_tend, ru, rv, wwE,  &
                      c1h, c2h,                     &
                      mut, time_step, config_flags, &
@@ -552,6 +578,7 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                      ids, ide, jds, jde, kds, kde, &
                      ims, ime, jms, jme, kms, kme, &
                      its, ite, jts, jte, kts, kte )
+     rv_tend_adv = rv_tend - rv_tend_old             !!NM: added line for v_adv
    ENDIF
 
    IF( ieva ) THEN
@@ -585,7 +612,7 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                             its, ite, jts, jte, kts, kte )
 
      ELSE
-     
+       rw_tend_old = rw_tend                            !!EP: added line to record current rw_tendency
        CALL advect_w ( w, w, rw_tend, ru, rv, wwE,   &
                        c1h, c2h,                     &
                        mut, time_step, config_flags, &
@@ -595,6 +622,7 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                        ids, ide, jds, jde, kds, kde, &
                        ims, ime, jms, jme, kms, kme, &
                        its, ite, jts, jte, kts, kte )
+       rw_tend_adv = rw_tend - rw_tend_old             !!EP: added line for v_adv
      ENDIF
 
    ENDIF  ! non-hydrostatic
@@ -621,7 +649,8 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                                ims, ime, jms, jme, kms, kme,  &
                                its, ite, jts, jte, kts, kte  )
    ELSE
-
+   
+     t_tend_old = t_tend                            !!EP: added line to record current t_tendency
      CALL advect_scalar ( t, t, t_tend, ru, rv, wwE,    &
                           c1h, c2h,                     &
                           mut, time_step, config_flags, &
@@ -631,6 +660,7 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                           ids, ide, jds, jde, kds, kde, &
                           ims, ime, jms, jme, kms, kme, &
                           its, ite, jts, jte, kts, kte )
+     t_tend_adv = t_tend - t_tend_old             !!EP: added line for t_adv
 
    ENDIF
 
@@ -651,10 +681,10 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
 
    ENDIF
      
-   IF ( config_flags%cu_physics == GDSCHEME  .OR.     &
-        config_flags%cu_physics == GFSCHEME  .OR.     &
-        config_flags%cu_physics == G3SCHEME  .OR.     &
-        config_flags%cu_physics == NTIEDTKESCHEME )  THEN     ! NTiedtke
+  ! IF ( config_flags%cu_physics == GDSCHEME  .OR.     &       ! commented by yueqin
+  !      config_flags%cu_physics == GFSCHEME  .OR.     &       ! commented by yueqin
+  !      config_flags%cu_physics == G3SCHEME  .OR.     &       ! commented by yueqin
+  !      config_flags%cu_physics == NTIEDTKESCHEME )  THEN     ! NTiedtke ! commented by yueqin
 
      ! theta advection only:
 
@@ -663,7 +693,7 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                     ims, ime, jms, jme, kms, kme,    &
                     its, ite, jts, jte, kts, kte     )
 
-   END IF
+ !  END IF  ! commented by yueqin
 
    CALL rhs_ph( ph_tend, u, v, wwE, ph, ph, phb, w, &
                 mut, muu, muv,                     &
@@ -714,6 +744,8 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
      
    ENDIF  ! IEVA
 
+   ru_tend_old = ru_tend                              !!NM: added line record current ru_tenden
+   rv_tend_old = rv_tend                              !!NM: added line record current rv_tenden
    CALL horizontal_pressure_gradient( ru_tend,rv_tend,                 &
                                        ph,alt,p,pb,al,php,cqu,cqv,     &
                                        muu,muv,mu,c1h,c2h,fnm,fnp,rdnw,&
@@ -725,14 +757,18 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                                        ids, ide, jds, jde, kds, kde,   &
                                        ims, ime, jms, jme, kms, kme,   &
                                        its, ite, jts, jte, kts, kte   )
+   ru_tend_pgf = ru_tend - ru_tend_old               !added line ru pgf tendency
+   rv_tend_pgf = rv_tend - rv_tend_old               !added line rv pgf tendency
 
    IF (non_hydrostatic) THEN
+        rw_tend_old = rw_tend                        !!EM:added line to record rw_tend
         CALL pg_buoy_w( rw_tend, p, cqw, mu, mub,       &
                         c1f,c2f,                        &
                         rdnw, rdn, g, msftx, msfty,     &
                         ids, ide, jds, jde, kds, kde,   &
                         ims, ime, jms, jme, kms, kme,   &
                         its, ite, jts, jte, kts, kte   )
+        rw_tend_buoy = rw_tend - rw_tend_old        !EM added line for rw buoyancy tendency
    ENDIF
 
    CALL w_damp   ( rw_tend, max_vert_cfl,             &
@@ -758,6 +794,9 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                                      ims, ime, jms, jme, kms, kme, &
                                      its, ite, jts, jte, kts, kte )
    ELSE
+        ru_tend_old = ru_tend                              !!NM: added line record current ru_tenden
+        rv_tend_old = rv_tend                              !!NM: added line record current rv_tenden
+        rw_tend_old = rw_tend                              !!EP: added line record current rw_tenden
         CALL coriolis ( ru, rv, rw,                   &
                         ru_tend,  rv_tend,  rw_tend,  &
                         config_flags,                 &
@@ -767,8 +806,15 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                         ids, ide, jds, jde, kds, kde, &
                         ims, ime, jms, jme, kms, kme, &
                         its, ite, jts, jte, kts, kte )
+       ru_tend_cor = ru_tend - ru_tend_old               !added line ru for coriolis tendency
+       rv_tend_cor = rv_tend - rv_tend_old               !added line rv for coriolis tendency
+       rw_tend_cor = rw_tend - rw_tend_old               !EP:added line rw for coriolis tendency
 
    END IF
+   
+   ru_tend_old = ru_tend                              !!NM: added line record current ru_tenden
+   rv_tend_old = rv_tend                              !!NM: added line record current rv_tenden
+   rw_tend_old = rw_tend                              !!EP: added line record current rw_tenden
 
    CALL curvature ( ru, rv, rw, u, v, w,            &
                      ru_tend,  rv_tend,  rw_tend,    &
@@ -779,6 +825,9 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                      ids, ide, jds, jde, kds, kde,   &
                      ims, ime, jms, jme, kms, kme,   &
                      its, ite, jts, jte, kts, kte   )
+    ru_tend_curv = ru_tend - ru_tend_old               !added line ru for curvature tendency
+    rv_tend_curv = rv_tend - rv_tend_old               !added line rv for curvature tendency
+    rw_tend_curv = rw_tend - rw_tend_old               !EP:added line rw for curvature tendency
 
 ! Damping option added for Held-Suarez test (also uses lw option HELDSUAREZ)
 
@@ -878,7 +927,8 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
     END IF diff_opt1
 
     IF ( diff_6th_opt .NE. 0 ) THEN
-
+    
+      ru_tend_old = ru_tendf                            !!EP: added line record current ru_tenden
       CALL sixth_order_diffusion( 'u', u, ru_tendf, mut, dt,          &
                                        config_flags, c1h, c2h,        &
                                        diff_6th_opt, diff_6th_factor, &
@@ -890,7 +940,9 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                                        ids, ide, jds, jde, kds, kde,  &
                                        ims, ime, jms, jme, kms, kme,  &
                                        its, ite, jts, jte, kts, kte )
+      ru_tend_6thdiff = ru_tendf - ru_tend_old               !added line ru for 6th order diffusion tendency
 
+      rv_tend_old = rv_tendf                          !!EP: added line record current rv_tenden
       CALL sixth_order_diffusion( 'v', v, rv_tendf, mut, dt,          &
                                        config_flags, c1h, c2h,        &
                                        diff_6th_opt, diff_6th_factor, &
@@ -902,8 +954,10 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                                        ids, ide, jds, jde, kds, kde,  &
                                        ims, ime, jms, jme, kms, kme,  &
                                        its, ite, jts, jte, kts, kte )
+      rv_tend_6thdiff = rv_tendf - rv_tend_old               !added line rv for 6th order diffusion tendency
 
       IF (non_hydrostatic)                                            &
+      rw_tend_old = rw_tendf                          !!EP: added line record current rw_tenden
       CALL sixth_order_diffusion( 'w', w, rw_tendf, mut, dt,          &
                                        config_flags, c1f, c2f,        &
                                        diff_6th_opt, diff_6th_factor, &
@@ -915,7 +969,9 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                                        ids, ide, jds, jde, kds, kde,  &
                                        ims, ime, jms, jme, kms, kme,  &
                                        its, ite, jts, jte, kts, kte )
+      rw_tend_6thdiff = rw_tendf - rw_tend_old               !EP:added line rw for 6th order diffusion tendency
 
+      t_tend_old = t_tendf                          !!EP: added line record current t_tenden
       CALL sixth_order_diffusion( 'm', t,  t_tendf, mut, dt,          &
                                        config_flags, c1h, c2h,        &
                                        diff_6th_opt, diff_6th_factor, &
@@ -927,6 +983,7 @@ SUBROUTINE rk_tendency ( config_flags, rk_step,                           &
                                        ids, ide, jds, jde, kds, kde,  &
                                        ims, ime, jms, jme, kms, kme,  &
                                        its, ite, jts, jte, kts, kte )
+     t_tend_6thdiff = t_tendf - t_tend_old               !EP:added line t for 6th order diffusion tendency
 
     ENDIF
 

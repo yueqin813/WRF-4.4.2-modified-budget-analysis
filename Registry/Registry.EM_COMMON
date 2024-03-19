@@ -1,5 +1,10 @@
 # At the present time this file is managed manually and edited by hand.                                         
-#                                               
+#   
+
+#This code was adapted by code from N. Moisseeva. Her original files, and instructions for using the code, can be found at https://open.library.ubc.ca/soa/cIRcle/collections/ubctheses/24/items/1.0165884.
+#These additions are marked by the initials NM. Further modifications were made by E. Potter in 2017, and are marked by the initials EP. They were used in version 4.4.2 of the WRF code.
+#This file is in the Registry directory.
+                                            
 ################################################################################
 # Dimension specifications
 #
@@ -146,6 +151,44 @@ state    real   erod           ij.      misc        1        -     i012rd  "EROD
 state    real   bathymetry     ij       dyn_em      1        -     i1  "bathymetry" "Bathymetry and topography" "m"
 state   integer BATHYMETRY_FLAG -       misc        1        -     i0rh   "BATHYMETRY_FLAG"   "Flag for bathymetry in the global attributes for metgrid data"
 
+# --------------------------------------------------------------------------------------
+# new tendency variables for dynamical analysis - (NM 2013) (EP 2017)
+# --------------------------------------------------------------------------------------
+
+state   real    ru_tend_adv       ikj     dyn_em          1               X               irh "RU_TEND_ADV"       "u-advection tendency" ""
+state   real    ru_tend_pgf       ikj     dyn_em          1               X               irh "RU_TEND_PGF"       "u-pressure gradient tendency" ""
+state   real    ru_tend_cor       ikj     dyn_em          1               X               irh "RU_TEND_COR"       "u-coriolis tendency" ""
+state   real    ru_tend_curv      ikj     dyn_em          1               X               irh "RU_TEND_CURV"      "u curvature gradient tendency" ""
+state   real    ru_tend_hdiff     ikj     dyn_em          1               X               irh "RU_TEND_HDIFF" "u horizontal diffusion tendency for diff_opt=2" ""
+state   real    ru_tend_phys      ikj     dyn_em          1               X               irh "RU_TEND_PHYS"      "total u physics tendency" ""
+state   real    ru_tend_6thdiff   ikj     dyn_em          1               X               irh "RU_TEND_6THDIFF"   "6th order diffusion tendency"  ""
+
+
+state   real    rv_tend_adv       ikj     dyn_em          1               Y               irh "RV_TEND_ADV"       "v-advection tendency" ""
+state   real    rv_tend_pgf       ikj     dyn_em          1               Y               irh "RV_TEND_PGF"       "v-pressure gradient tendency" ""
+state   real    rv_tend_cor       ikj     dyn_em          1               Y               irh "RV_TEND_COR"       "v-coriolis tendency" ""
+state   real    rv_tend_curv      ikj     dyn_em          1               Y               irh "RV_TEND_CURV"      "v curvature gradient tendency" ""
+state   real    rv_tend_hdiff     ikj     dyn_em          1               Y               irh "RV_TEND_HDIFF" "v horizontal diffusion tendency for diff_opt=2" ""
+state   real    rv_tend_phys      ikj     dyn_em          1               Y               irh "RV_TEND_PHYS"      "total v physics tendency" ""
+state   real    rv_tend_6thdiff   ikj     dyn_em          1               Y               irh "RV_TEND_6THDIFF"   "6th order diffusion tendency"
+ ""
+
+state   real    rw_tend_adv       ikj     dyn_em          1               Z               irh "RW_TEND_ADV"       "w-advection tendency" ""
+state   real    rw_tend_buoy      ikj     dyn_em          1               Z               irh "RW_TEND_BUOY"       "w-buoyancy tendency" ""
+state   real    rw_tend_cor       ikj     dyn_em          1               Z               irh "RW_TEND_COR"       "w-coriolis tendency" ""
+state   real    rw_tend_curv      ikj     dyn_em          1               Z               irh "RW_TEND_CURV"      "w curvature gradient tendency" ""
+state   real    rw_tend_hdiff     ikj     dyn_em          1               Z               irh "RW_TEND_HDIFF" "w horizontal diffusion tendency for diff_opt=2" ""
+state   real    rw_tend_6thdiff   ikj     dyn_em          1               Z               irh "RW_TEND_6THDIFF"   "6th order diffusion tendency"
+
+
+
+state   real    t_tend_adv        ikj     dyn_em          1               -               irh "T_TEND_ADV"       "t-advection tendency" ""
+state   real    t_tend_hdiff      ikj     dyn_em          1               -              irh "T_TEND_HDIFF" "t horizontal diffusion tendency for diff_opt=2" ""
+state   real    t_tend_6thdiff    ikj     dyn_em          1               -               irh "T_TEND_6THDIFF"   "6th order diffusion tendency"
+state   real    t_tend_phys       ikj     dyn_em          1               -               irh "T_TEND_PHYS"      "total t physics tendency" ""
+state   real    t_tend_phys_BL    ikj     dyn_em          1               -               irh "T_TEND_PHYS_BL"      "t physics tendency from boundary layer" ""
+state   real    t_tend_phys_rad   ikj     dyn_em          1               -               irh "T_TEND_PHYS_RAD"      "total t physics from radiation" ""
+
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #                                               
 # Variables for Eulerian mass coordinate dynamics                                            
@@ -158,7 +201,9 @@ state    real   u              ikjb     dyn_em      2         X     \
      i0rhusdf=(bdy_interp:dt)       "U"                      "x-wind component"   "m s-1"
 state    real   ru             ikj     dyn_em      1         X      -        "MU_U"        "mu-coupled u"   "Pa m s-1"
 state    real   ru_m           ikj     dyn_em      1         X      -        "ru_m"        ""   ""
-state    real   ru_tend        ikj     dyn_em      1         X      -        "ru_tend"        ""   ""                                   
+state    real   ru_tend        ikj     dyn_em      1         X      irh        "ru_tend"        ""   "" #changed by NM                                   
+state    real   utend_sound    ikj     dyn_em      1         X      irh        "utend_sound"        ""   "" #EP
+state    real   u_old          ikj     dyn_em      1         X      -        "u_old"        ""   "" #EP                             
 i1       real   ru_tendf       ikj     dyn_em      1         X                                          
 state    real   u_save         ikj     dyn_em      1         X      -        "u_save"
 state    real   z_force        |       dyn_em      1         -      i3rh     "Z_FORCE" "height of forcing input" "m"
@@ -171,7 +216,9 @@ state    real   v              ikjb     dyn_em      2         Y     \
      i0rhusdf=(bdy_interp:dt)        "V"                     "y-wind component"   "m s-1"
 state    real   rv             ikj     dyn_em      1         Y      -        "MU_V"        "mu-coupled v"   "Pa m s-1"
 state    real   rv_m           ikj     dyn_em      1         Y      -        "rv_m"
-state    real   rv_tend        ikj     dyn_em      1         Y      -        "rv_tend"
+state    real   rv_tend        ikj     dyn_em      1         Y      irh        "rv_tend" #changed by NM
+state    real   vtend_sound    ikj     dyn_em      1         Y      irh        "vtend_sound"        ""   "" #EP
+state    real   v_old          ikj     dyn_em      1         Y      -        "v_old"        ""   "" #EP 
 i1       real   rv_tendf       ikj     dyn_em      1         Y                                          
 state    real   v_save         ikj     dyn_em      1         Y      -        "v_save"                   
 state    real   v_g            |       dyn_em      1         -      i3rh     "V_G" "y-direction geostrophic wind" "m s-1"
@@ -186,8 +233,8 @@ i1       real   ww1            ikj     dyn_em      1         Z
 i1       real   wwE            ikj     dyn_em      1         Z      -         "wwE"  "Explicit vertical velocity" "Pa s-1"
 i1       real   wwI            ikj     dyn_em      1         Z      -         "wwI"  "Implicit vertical velocity" "Pa s-1"
 state    real   ww_m           ikj     dyn_em      1         Z      r         "ww_m"   "time-avg mu-coupled eta-dot"    "Pa s-1"
-i1       real   wwp            ikj     dyn_em      1         Z                                          
-i1       real   rw_tend        ikj     dyn_em      1         Z                                          
+i1       real   wwp            ikj     dyn_em      1         Z                                            
+state    real   rw_tend        ikj     dyn_em      1         Z      irh         "rw_tend" #changed by EP                                      
 i1       real   rw_tendf       ikj     dyn_em      1         Z                                          
 i1       real   w_save         ikj     dyn_em      1         Z                                          
 state    real   w_subs         |       dyn_em      1         -      i3rh      "W_SUBS" "large-scale vertical velocity" "m s-1"
@@ -210,7 +257,9 @@ state    real   t              ikjb     dyn_em      2         -     \
        i0rhusdf=(bdy_interp:dt)   "thm"      "either 1) pert moist pot temp=(1+Rv/Rd Qv)*(theta)-T0, or 2) pert dry pot temp=theta-T0; based on use_theta_m setting" "K"
 
 state    real   t_init         ikj     dyn_em      1         -      ird       "t_init" "initial potential temperature" "K"
-i1       real   t_tend         ikj     dyn_em      1         -  
+state    real   t_tend         ikj     dyn_em      1         -      irh         "T_TEND" "theta tendency"  
+state    real   ttend_sound    ikj     dyn_em      1         -      irh        "ttend_sound"        ""   "" #EP
+state    real   t_old          ikj     dyn_em      1         -      -        "t_old"        ""   "" #EP 
 i1       real   t_tendf        ikj     dyn_em      1         -  
 i1       real   t_2save        ikj     dyn_em      1         -   
 state    real   t_save         ikj     dyn_em      1         -      -        "t_save"
@@ -290,11 +339,11 @@ state    real   mub_fine        ij     dyn_em      1         -      -           
 state    real   mub_save        ij     dyn_em      1         -      -           "mub_save" "nest temp, holds orig fine grid mub" "Pa"
 state    real   mu0             ij     dyn_em      1         -      i1          "mu0" "initial dry mass in column" "Pa"
 state    real   mudf            ij     dyn_em      1         -      -           "mudf" "" ""
-state    real   muu             ij     dyn_em      1          X     -           "muu"
-state    real   muus            ij     dyn_em      1          X     -           "muus"
-state    real   muv             ij     dyn_em      1          Y     -           "muv"
-state    real   muvs            ij     dyn_em      1          Y     -           "muvs"
-state    real   mut             ij     dyn_em      1          -     -           "mut"
+state    real   muu             ij     dyn_em      1          X     irh         "muu"  #EP chnaged to irh
+i1       real   muus            ij     dyn_em      1          -     
+state    real   muv             ij     dyn_em      1          Y     irh         "muv" #EP chnaged to irh
+i1       real   muvs            ij     dyn_em      1          -     
+state    real   mut             ij     dyn_em      1          -     irh         "mut" #EP chnaged to irh
 state    real   muts            ij     dyn_em      1          -     -           "muts"
 i1       real   muave           ij     dyn_em      1          -     
 i1       real   mu_save         ij     dyn_em      1          -     
@@ -782,6 +831,9 @@ state    real   ts_v            ?!       misc      -         -      -        "TS
 state    real   ts_q            ?!       misc      -         -      -        "TS_Q"           "Surface mixing ratio"
 state    real   ts_t            ?!       misc      -         -      -        "TS_T"           "Surface temperature"
 state    real   ts_psfc         ?!       misc      -         -      -        "TS_PSFC"        "Surface pressure"
+state    real   ts_mut          ?!       misc      -         -      -        "TS_MUT"         "MUT"  #EP
+state    real   ts_muu          ?!       misc      -         -      -        "TS_MUU"         "MUU"  #EP
+state    real   ts_muv          ?!       misc      -         -      -        "TS_MUV"         "MUV"  #EP
 state    real   ts_glw          ?!       misc      -         -      -        "TS_GLW"         "Downward long wave flux at surface"
 state    real   ts_gsw          ?!       misc      -         -      -        "TS_GSW"         "Net short wave flux at surface"
 state    real   ts_hfx          ?!       misc      -         -      -        "TS_HFX"         "Upward heat flux at surface"
@@ -2106,7 +2158,7 @@ state     real    cldmask        ij       dyn_em      1         -    i01h "cldma
 state     real    cldtopz        ij       dyn_em      1         -    i01h "cldtopz"  "Cloud top height above sea level" "m asl"
 state     real    cldbasez       ij       dyn_em      1         -    i01h "cldbasez" "Cloud base height above ground level" "m agl"
 
-# Accumulated physics tendencies
+# Accumulated physics tendencies (ATHFTEN added by yueqin)
 state    real  ATHMPTEN        ikj       misc     1         -      h       "ATHMPTEN"        "ACCUMULATED THETA TENDENCY DUE TO MICROPHY SCHEME"    "K "
 state    real  AQVMPTEN        ikj       misc     1         -      h       "AQVMPTEN"        "ACCUMULATED Q_V TENDENCY DUE TO MICROPHY SCHEME"      "kg kg-1 "
 state    real  ATHCUTEN        ikj       misc     1         -      h       "ATHCUTEN"        "ACCUMULATED THETA TENDENCY DUE TO CUMULUS SCHEME"     "K "
@@ -2123,6 +2175,7 @@ state    real  AUBLTEN         ikj       misc     1         -      h       "AUBL
 state    real  AVBLTEN         ikj       misc     1         -      h       "AVBLTEN"         "ACCUMULATED Y WIND TENDENCY DUE TO PBL SCHEME"        "m s-1 "
 state    real  ATHRATENLW      ikj       misc     1         -      h       "ATHRATENLW"      "ACCUMULATED THETA TENDENCY DUE TO LW RADIATION SCHEME"   "K "
 state    real  ATHRATENSW      ikj       misc     1         -      h       "ATHRATENSW"      "ACCUMULATED THETA TENDENCY DUE TO SW RADIATION SCHEME"   "K "
+state    real  ATHFTEN         ikj       misc     1         -      h       "ATHFTEN"         "ACCUMULATED THETA TENDENCY DUE TO TOTAL ADVECTION"       "K "
 #
 #---------------------------------------------------------------------------------------------------------------------------------------
 #                                               
@@ -3335,8 +3388,8 @@ package   seabreeze2d_x  ideal_case==8               -            -
 package   les            ideal_case==9               -            -
 # WRF-Chem specific diagnostics
 package   clnatmdiag     calc_clean_atm_diag==1      -            state:SWUPTCLN,SWDNTCLN,SWUPBCLN,SWDNBCLN,LWUPTCLN,LWDNTCLN,LWUPBCLN,LWDNBCLN 
-#
-package   acc_phys_tend  acc_phy_tend==1             -            state:ATHMPTEN,AQVMPTEN,ATHCUTEN,AQVCUTEN,AUCUTEN,AVCUTEN,ATHSHTEN,AQVSHTEN,AUSHTEN,AVSHTEN,ATHBLTEN,AQVBLTEN,AUBLTEN,AVBLTEN,ATHRATENLW,ATHRATENSW
+# (ATHFTEN--added by yueqin)
+package   acc_phys_tend  acc_phy_tend==1             -            state:ATHMPTEN,AQVMPTEN,ATHCUTEN,AQVCUTEN,AUCUTEN,AVCUTEN,ATHSHTEN,AQVSHTEN,AUSHTEN,AVSHTEN,ATHBLTEN,AQVBLTEN,AUBLTEN,AVBLTEN,ATHRATENLW,ATHRATENSW,ATHFTEN
 
 #---------------------------------------------------------------------------------------------------------------------------------------
 ## communications                                               
