@@ -373,6 +373,7 @@ CONTAINS
            ,athbl=grid%athblten     ,aqvbl=grid%aqvblten             &
            ,aubl=grid%aublten       ,avbl=grid%avblten               &
            ,athralw=grid%athratenlw ,athrasw=grid%athratensw         &
+           ,athf=grid%athften                                        & ! added by yueqin
            ,h_diabatic=grid%h_diabatic ,qv_diabatic=grid%qv_diabatic &
            ,rthcuten=grid%rthcuten  ,rqvcuten=grid%rqvcuten          &
            ,rucuten=grid%rucuten    ,rvcuten=grid%rvcuten            &
@@ -381,6 +382,7 @@ CONTAINS
            ,rthblten=grid%rthblten  ,rqvblten=grid%rqvblten          &
            ,rublten=grid%rublten    ,rvblten=grid%rvblten            &
            ,rthratenlw=grid%rthratenlw  ,rthratensw=grid%rthratensw  &
+           ,rthften=grid%rthften                                     & ! added by yueqin
       ! Selection flag 
                 ,DIAG_PRINT=config_flags%diag_print                  &
                 ,BUCKET_MM=config_flags%bucket_mm                    &
