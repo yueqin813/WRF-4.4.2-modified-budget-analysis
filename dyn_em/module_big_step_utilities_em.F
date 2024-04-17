@@ -5306,10 +5306,10 @@ END SUBROUTINE phy_prep
 
    END IF
 
-   IF(( config_flags%cu_physics == GDSCHEME ) .OR.    &
-      ( config_flags%cu_physics == GFSCHEME ) .OR.    &
-      ( config_flags%cu_physics == G3SCHEME ) .OR.    &
-      ( config_flags%cu_physics == NTIEDTKESCHEME )) THEN
+!   IF(( config_flags%cu_physics == GDSCHEME ) .OR.    &   ! commented by yueqin
+!      ( config_flags%cu_physics == GFSCHEME ) .OR.    &   ! commented by yueqin
+!      ( config_flags%cu_physics == G3SCHEME ) .OR.    &   ! commented by yueqin
+!      ( config_flags%cu_physics == NTIEDTKESCHEME )) THEN ! commented by yueqin
 
       DO J=j_start,j_end
       DO I=i_start,i_end
@@ -5331,7 +5331,7 @@ END SUBROUTINE phy_prep
          ENDDO
          ENDDO
       END IF
-   END IF
+!   END IF ! commented by yueqin
 
 ! fdda
 ! note fdda u and v tendencies are staggered, also only interior points have muu/muv,
