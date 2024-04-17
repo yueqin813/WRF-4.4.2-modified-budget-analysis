@@ -33,11 +33,13 @@ CONTAINS
                      ,athsh, aqvsh, aush, avsh                        &
                      ,athbl, aqvbl, aubl, avbl                        &
                      ,athralw, athrasw                                &
+                     ,athf                                            & ! added by yueqin
                      ,h_diabatic, qv_diabatic                         &
                      ,rthcuten, rqvcuten, rucuten, rvcuten            &
                      ,rthshten, rqvshten, rushten, rvshten            &
                      ,rthblten, rqvblten, rublten, rvblten            &
                      ,rthratenlw, rthratensw                          &
+                     ,rthften                                         & ! added by yueqin
                      ,dt,xtime                                        &
                      ,diag_print                                      &
                      ,bucket_mm, bucket_J                             &
@@ -90,6 +92,7 @@ CONTAINS
 !-- AVBLTEN       Accumulated v-wind tendency from pbl physics
 !-- ATHRATENLW    Accumulated theta tendency from longwave radiation
 !-- ATHRATENSW    Accumulated theta tendency from shortwave radiation
+!-- ATHFTEN       Accumulated theta tendency from total advection (added by yueqin)
 !-- P8W           3D pressure array at full eta levels
 !-- MU            dry column hydrostatic pressure
 !-- RAINC         cumulus scheme precipitation since hour 0
@@ -173,14 +176,16 @@ CONTAINS
                                          ,athcu,aqvcu,aucu,avcu  &
                                          ,athsh,aqvsh,aush,avsh  &
                                          ,athbl,aqvbl,aubl,avbl  &
-                                               ,athralw,athrasw
+                                               ,athralw,athrasw  &
+                                               ,athf              ! added by yueqin
 
    REAL, DIMENSION( ims:ime, kms:kme, jms:jme ), INTENT(IN) ::   &
                                          h_diabatic,qv_diabatic  &
                              ,rthcuten,rqvcuten,rucuten,rvcuten  &
                              ,rthshten,rqvshten,rushten,rvshten  &
                              ,rthblten,rqvblten,rublten,rvblten  &
-                                         ,rthratenlw,rthratensw
+                                         ,rthratenlw,rthratensw  &
+                                         ,rthften                ! added by yueqin
 
    INTEGER, DIMENSION( ims:ime , jms:jme ), INTENT(INOUT) ::     &
                                                        I_RAINC,  &
@@ -252,6 +257,7 @@ CONTAINS
              avbl(i,k,j) = 0.
           athralw(i,k,j) = 0.
           athrasw(i,k,j) = 0.
+             athf(i,k,j) = 0. ! added by yueqin
          ENDDO
          ENDDO
          ENDDO
@@ -279,6 +285,7 @@ CONTAINS
           avbl(i,k,j)  =  avbl(i,k,j)  +  rvblten(i,k,j)*dt
        athralw(i,k,j)  =  athralw(i,k,j)  +  rthratenlw(i,k,j)*dt
        athrasw(i,k,j)  =  athrasw(i,k,j)  +  rthratensw(i,k,j)*dt
+          athf(i,k,j)  =  athf(i,k,j)  +  rthften(i,k,j)*dt ! added by yueqin
       ENDDO
       ENDDO
       ENDDO
