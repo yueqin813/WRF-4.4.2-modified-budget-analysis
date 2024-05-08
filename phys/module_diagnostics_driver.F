@@ -1,4 +1,5 @@
 !WRF:MODEL_LAYER:PHYSICS
+!This code was modified by Yue Qin 4/17/24 to output accumulated physics and rk tendencies in momentum/thermodynamic budgets.
 
 MODULE module_diagnostics_driver
 
@@ -374,6 +375,17 @@ CONTAINS
            ,aubl=grid%aublten       ,avbl=grid%avblten               &
            ,athralw=grid%athratenlw ,athrasw=grid%athratensw         &
            ,athf=grid%athften                                        & ! added by yueqin
+     ,au_tend=grid%au_tend, au_tend_cor=grid%au_tend_cor, au_tend_adv=grid%au_tend_adv               & ! (yueqin-4/17/24)
+     ,au_tend_pgf=grid%au_tend_pgf, au_tend_curv=grid%au_tend_curv, au_tend_hdiff=grid%au_tend_hdiff        & ! (yueqin-4/17/24)
+     ,au_tend_6thdiff=grid%au_tend_6thdiff, au_tend_phys=grid%au_tend_phys                   & ! (yueqin-4/17/24)
+     ,av_tend=grid%av_tend, av_tend_cor=grid%av_tend_cor, av_tend_adv=grid%av_tend_adv               & ! (yueqin-4/17/24)
+     ,av_tend_pgf=grid%av_tend_pgf, av_tend_curv=grid%av_tend_curv, av_tend_hdiff=grid%av_tend_hdiff        & ! (yueqin-4/17/24)
+     ,av_tend_6thdiff=grid%av_tend_6thdiff, av_tend_phys=grid%av_tend_phys                   & ! (yueqin-4/17/24)
+     ,aw_tend=grid%aw_tend, aw_tend_cor=grid%aw_tend_cor, aw_tend_adv=grid%aw_tend_adv               & ! (yueqin-4/17/24)
+     ,aw_tend_buoy=grid%aw_tend_buoy, aw_tend_curv=grid%aw_tend_curv, aw_tend_6thdiff=grid%aw_tend_6thdiff     & ! (yueqin-4/17/24)
+     ,at_tend=grid%at_tend, at_tend_adv=grid%at_tend_adv, at_tend_hdiff=grid%at_tend_hdiff             & ! (yueqin-4/17/24)
+     ,at_tend_6thdiff=grid%at_tend_6thdiff, at_tend_phys=grid%at_tend_phys                   & ! (yueqin-4/17/24)
+     ,at_tend_phys_bl=grid%at_tend_phys_bl, at_tend_phys_rad=grid%at_tend_phys_rad               & ! (yueqin-4/17/24)
            ,h_diabatic=grid%h_diabatic ,qv_diabatic=grid%qv_diabatic &
            ,rthcuten=grid%rthcuten  ,rqvcuten=grid%rqvcuten          &
            ,rucuten=grid%rucuten    ,rvcuten=grid%rvcuten            &
@@ -383,6 +395,17 @@ CONTAINS
            ,rublten=grid%rublten    ,rvblten=grid%rvblten            &
            ,rthratenlw=grid%rthratenlw  ,rthratensw=grid%rthratensw  &
            ,rthften=grid%rthften                                     & ! added by yueqin
+      ,ru_tend=grid%ru_tend, ru_tend_cor=grid%ru_tend_cor, ru_tend_adv=grid%ru_tend_adv               & ! (yueqin-4/17/24)
+      ,ru_tend_pgf=grid%ru_tend_pgf, ru_tend_curv=grid%ru_tend_curv, ru_tend_hdiff=grid%ru_tend_hdiff        & ! (yueqin-4/17/24)
+      ,ru_tend_6thdiff=grid%ru_tend_6thdiff, ru_tend_phys=grid%ru_tend_phys                   & ! (yueqin-4/17/24)
+      ,rv_tend=grid%rv_tend, rv_tend_cor=grid%rv_tend_cor, rv_tend_adv=grid%rv_tend_adv               & ! (yueqin-4/17/24)
+      ,rv_tend_pgf=grid%rv_tend_pgf, rv_tend_curv=grid%rv_tend_curv, rv_tend_hdiff=grid%rv_tend_hdiff        & ! (yueqin-4/17/24)
+      ,rv_tend_6thdiff=grid%rv_tend_6thdiff, rv_tend_phys=grid%rv_tend_phys                   & ! (yueqin-4/17/24)
+      ,rw_tend=grid%rw_tend, rw_tend_cor=grid%rw_tend_cor, rw_tend_adv=grid%rw_tend_adv               & ! (yueqin-4/17/24)
+      ,rw_tend_buoy=grid%rw_tend_buoy, rw_tend_curv=grid%rw_tend_curv, rw_tend_6thdiff=grid%rw_tend_6thdiff     & ! (yueqin-4/17/24)
+      ,t_tend=grid%t_tend, t_tend_adv=grid%t_tend_adv, t_tend_hdiff=grid%t_tend_hdiff                & ! (yueqin-4/17/24)
+      ,t_tend_6thdiff=grid%t_tend_6thdiff, t_tend_phys=grid%t_tend_phys                     & ! (yueqin-4/17/24)
+      ,t_tend_phys_bl=grid%t_tend_phys_bl, t_tend_phys_rad=grid%t_tend_phys_rad                 & ! (yueqin-4/17/24)
       ! Selection flag 
                 ,DIAG_PRINT=config_flags%diag_print                  &
                 ,BUCKET_MM=config_flags%bucket_mm                    &

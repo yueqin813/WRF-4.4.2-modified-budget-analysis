@@ -6,6 +6,7 @@ CONTAINS
 END MODULE module_diag_misc
 #else
 !WRF:MEDIATION_LAYER:PHYSICS
+!This code was modified by Yue Qin 4/17/24 to output accumulated physics and rk tendencies in momentum/thermodynamic budgets.
 !
 
 MODULE module_diag_misc
@@ -34,12 +35,34 @@ CONTAINS
                      ,athbl, aqvbl, aubl, avbl                        &
                      ,athralw, athrasw                                &
                      ,athf                                            & ! added by yueqin
+                     ,au_tend, au_tend_cor, au_tend_adv               & ! (yueqin-4/17/24)
+                     ,au_tend_pgf, au_tend_curv, au_tend_hdiff        & ! (yueqin-4/17/24)
+                     ,au_tend_6thdiff, au_tend_phys                   & ! (yueqin-4/17/24)
+                     ,av_tend, av_tend_cor, av_tend_adv               & ! (yueqin-4/17/24)
+                     ,av_tend_pgf, av_tend_curv, av_tend_hdiff        & ! (yueqin-4/17/24)
+                     ,av_tend_6thdiff, av_tend_phys                   & ! (yueqin-4/17/24)
+                     ,aw_tend, aw_tend_cor, aw_tend_adv               & ! (yueqin-4/17/24)
+                     ,aw_tend_buoy, aw_tend_curv, aw_tend_6thdiff     & ! (yueqin-4/17/24)
+                     ,at_tend, at_tend_adv, at_tend_hdiff             & ! (yueqin-4/17/24)
+                     ,at_tend_6thdiff, at_tend_phys                   & ! (yueqin-4/17/24)
+                     ,at_tend_phys_bl, at_tend_phys_rad               & ! (yueqin-4/17/24)
                      ,h_diabatic, qv_diabatic                         &
                      ,rthcuten, rqvcuten, rucuten, rvcuten            &
                      ,rthshten, rqvshten, rushten, rvshten            &
                      ,rthblten, rqvblten, rublten, rvblten            &
                      ,rthratenlw, rthratensw                          &
                      ,rthften                                         & ! added by yueqin
+                     ,ru_tend, ru_tend_cor, ru_tend_adv               & ! (yueqin-4/17/24)
+                     ,ru_tend_pgf, ru_tend_curv, ru_tend_hdiff        & ! (yueqin-4/17/24)
+                     ,ru_tend_6thdiff, ru_tend_phys                   & ! (yueqin-4/17/24)
+                     ,rv_tend, rv_tend_cor, rv_tend_adv               & ! (yueqin-4/17/24)
+                     ,rv_tend_pgf, rv_tend_curv, rv_tend_hdiff        & ! (yueqin-4/17/24)
+                     ,rv_tend_6thdiff, rv_tend_phys                   & ! (yueqin-4/17/24)
+                     ,rw_tend, rw_tend_cor, rw_tend_adv               & ! (yueqin-4/17/24)
+                     ,rw_tend_buoy, rw_tend_curv, rw_tend_6thdiff     & ! (yueqin-4/17/24)
+                     ,t_tend, t_tend_adv, t_tend_hdiff                & ! (yueqin-4/17/24)
+                     ,t_tend_6thdiff, t_tend_phys                     & ! (yueqin-4/17/24)
+                     ,t_tend_phys_bl, t_tend_phys_rad                 & ! (yueqin-4/17/24)
                      ,dt,xtime                                        &
                      ,diag_print                                      &
                      ,bucket_mm, bucket_J                             &
@@ -93,6 +116,37 @@ CONTAINS
 !-- ATHRATENLW    Accumulated theta tendency from longwave radiation
 !-- ATHRATENSW    Accumulated theta tendency from shortwave radiation
 !-- ATHFTEN       Accumulated theta tendency from total advection (added by yueqin)
+!
+!-- au_tend       Accumulated u_wind tendency (yueqin-4/17/24)
+!-- au_tend_cor   Accumulated u_wind tendency from Coriolis force (yueqin-4/17/24)
+!-- au_tend_adv   Accumulated u_wind tendency from advection (yueqin-4/17/24)
+!-- au_tend_pgf   Accumulated u_wind tendency from pressure gradient force (yueqin-4/17/24)
+!-- au_tend_curv   Accumulated u_wind tendency from curvature (yueqin-4/17/24)
+!-- au_tend_hdiff   Accumulated u_wind tendency from horizontal diffusion (yueqin-4/17/24)
+!-- au_tend_6thdiff   Accumulated u_wind tendency from numerical errors (yueqin-4/17/24)
+!-- au_tend_phys   Accumulated u_wind tendency from physics (yueqin-4/17/24)
+!-- av_tend       Accumulated v_wind tendency (yueqin-4/17/24)
+!-- av_tend_cor   Accumulated v_wind tendency from Coriolis force (yueqin-4/17/24)
+!-- av_tend_adv   Accumulated v_wind tendency from advection (yueqin-4/17/24)
+!-- av_tend_pgf   Accumulated v_wind tendency from pressure gradient force (yueqin-4/17/24)
+!-- av_tend_curv   Accumulated v_wind tendency from curvature (yueqin-4/17/24)
+!-- av_tend_hdiff   Accumulated v_wind tendency from horizontal diffusion (yueqin-4/17/24)
+!-- av_tend_6thdiff   Accumulated v_wind tendency from numerical errors (yueqin-4/17/24)
+!-- av_tend_phys   Accumulated v_wind tendency from physics (yueqin-4/17/24)
+!-- aw_tend       Accumulated w_wind tendency (yueqin-4/17/24)
+!-- aw_tend_cor   Accumulated w_wind tendency from Coriolis force (yueqin-4/17/24)
+!-- aw_tend_adv   Accumulated w_wind tendency from advection (yueqin-4/17/24)
+!-- aw_tend_curv   Accumulated w_wind tendency from curvature (yueqin-4/17/24)
+!-- aw_tend_buoy   Accumulated w_wind tendency from buoyancy (yueqin-4/17/24)
+!-- aw_tend_6thdiff   Accumulated w_wind tendency from numerical errors (yueqin-4/17/24)
+!-- at_tend       Accumulated theta tendency (yueqin-4/17/24)
+!-- at_tend_adv   Accumulated theta tendency from advection (yueqin-4/17/24)
+!-- at_tend_hdiff   Accumulated theta tendency from horizontal diffusion (yueqin-4/17/24)
+!-- at_tend_6thdiff   Accumulated theta tendency from numerical errors (yueqin-4/17/24)
+!-- at_tend_phys   Accumulated theta tendency from physics (yueqin-4/17/24)
+!-- at_tend_phys_bl   Accumulated theta tendency from pbl physics (yueqin-4/17/24)
+!-- at_tend_phys_rad   Accumulated theta tendency from radiation physics (yueqin-4/17/24)
+!
 !-- P8W           3D pressure array at full eta levels
 !-- MU            dry column hydrostatic pressure
 !-- RAINC         cumulus scheme precipitation since hour 0
@@ -177,7 +231,18 @@ CONTAINS
                                          ,athsh,aqvsh,aush,avsh  &
                                          ,athbl,aqvbl,aubl,avbl  &
                                                ,athralw,athrasw  &
-                                               ,athf              ! added by yueqin
+                                               ,athf             & ! added by yueqin
+                     ,au_tend, au_tend_cor, au_tend_adv               & ! (yueqin-4/17/24)
+                     ,au_tend_pgf, au_tend_curv, au_tend_hdiff        & ! (yueqin-4/17/24)
+                     ,au_tend_6thdiff, au_tend_phys                   & ! (yueqin-4/17/24)
+                     ,av_tend, av_tend_cor, av_tend_adv               & ! (yueqin-4/17/24)
+                     ,av_tend_pgf, av_tend_curv, av_tend_hdiff        & ! (yueqin-4/17/24)
+                     ,av_tend_6thdiff, av_tend_phys                   & ! (yueqin-4/17/24)
+                     ,aw_tend, aw_tend_cor, aw_tend_adv               & ! (yueqin-4/17/24)
+                     ,aw_tend_buoy, aw_tend_curv, aw_tend_6thdiff     & ! (yueqin-4/17/24)
+                     ,at_tend, at_tend_adv, at_tend_hdiff             & ! (yueqin-4/17/24)
+                     ,at_tend_6thdiff, at_tend_phys                   & ! (yueqin-4/17/24)
+                     ,at_tend_phys_bl, at_tend_phys_rad               ! (yueqin-4/17/24)
 
    REAL, DIMENSION( ims:ime, kms:kme, jms:jme ), INTENT(IN) ::   &
                                          h_diabatic,qv_diabatic  &
@@ -185,7 +250,18 @@ CONTAINS
                              ,rthshten,rqvshten,rushten,rvshten  &
                              ,rthblten,rqvblten,rublten,rvblten  &
                                          ,rthratenlw,rthratensw  &
-                                         ,rthften                ! added by yueqin
+                                         ,rthften                & ! added by yueqin
+                     ,ru_tend, ru_tend_cor, ru_tend_adv               & ! (yueqin-4/17/24)
+                     ,ru_tend_pgf, ru_tend_curv, ru_tend_hdiff        & ! (yueqin-4/17/24)
+                     ,ru_tend_6thdiff, ru_tend_phys                   & ! (yueqin-4/17/24)
+                     ,rv_tend, rv_tend_cor, rv_tend_adv               & ! (yueqin-4/17/24)
+                     ,rv_tend_pgf, rv_tend_curv, rv_tend_hdiff        & ! (yueqin-4/17/24)
+                     ,rv_tend_6thdiff, rv_tend_phys                   & ! (yueqin-4/17/24)
+                     ,rw_tend, rw_tend_cor, rw_tend_adv               & ! (yueqin-4/17/24)
+                     ,rw_tend_buoy, rw_tend_curv, rw_tend_6thdiff     & ! (yueqin-4/17/24)
+                     ,t_tend, t_tend_adv, t_tend_hdiff                & ! (yueqin-4/17/24)
+                     ,t_tend_6thdiff, t_tend_phys                     & ! (yueqin-4/17/24)
+                     ,t_tend_phys_bl, t_tend_phys_rad                  ! (yueqin-4/17/24)
 
    INTEGER, DIMENSION( ims:ime , jms:jme ), INTENT(INOUT) ::     &
                                                        I_RAINC,  &
@@ -258,6 +334,35 @@ CONTAINS
           athralw(i,k,j) = 0.
           athrasw(i,k,j) = 0.
              athf(i,k,j) = 0. ! added by yueqin
+             au_tend(i,k,j) = 0. ! (yueqin-4/17/24)
+             au_tend_cor(i,k,j) = 0. ! (yueqin-4/17/24)
+             au_tend_adv(i,k,j) = 0. ! (yueqin-4/17/24)
+             au_tend_pgf(i,k,j) = 0. ! (yueqin-4/17/24)
+             au_tend_curv(i,k,j) = 0. ! (yueqin-4/17/24)
+             au_tend_hdiff(i,k,j) = 0. ! (yueqin-4/17/24)
+             au_tend_6thdiff(i,k,j) = 0. ! (yueqin-4/17/24)
+             au_tend_phys(i,k,j) = 0. ! (yueqin-4/17/24)
+             av_tend(i,k,j) = 0. ! (yueqin-4/17/24)
+             av_tend_cor(i,k,j) = 0. ! (yueqin-4/17/24)
+             av_tend_adv(i,k,j) = 0. ! (yueqin-4/17/24)
+             av_tend_pgf(i,k,j) = 0. ! (yueqin-4/17/24)
+             av_tend_curv(i,k,j) = 0. ! (yueqin-4/17/24)
+             av_tend_hdiff(i,k,j) = 0. ! (yueqin-4/17/24)
+             av_tend_6thdiff(i,k,j) = 0. ! (yueqin-4/17/24)
+             av_tend_phys(i,k,j) = 0. ! (yueqin-4/17/24)
+             aw_tend(i,k,j) = 0. ! (yueqin-4/17/24)
+             aw_tend_cor(i,k,j) = 0. ! (yueqin-4/17/24)
+             aw_tend_adv(i,k,j) = 0. ! (yueqin-4/17/24)
+             aw_tend_curv(i,k,j) = 0. ! (yueqin-4/17/24)
+             aw_tend_buoy(i,k,j) = 0. ! (yueqin-4/17/24)
+             aw_tend_6thdiff(i,k,j) = 0. ! (yueqin-4/17/24)
+             at_tend(i,k,j) = 0. ! (yueqin-4/17/24)
+             at_tend_adv(i,k,j) = 0. ! (yueqin-4/17/24)
+             at_tend_hdiff(i,k,j) = 0. ! (yueqin-4/17/24)
+             at_tend_6thdiff(i,k,j) = 0. ! (yueqin-4/17/24)
+             at_tend_phys(i,k,j) = 0. ! (yueqin-4/17/24)
+             at_tend_phys_bl(i,k,j) = 0. ! (yueqin-4/17/24)
+             at_tend_phys_rad(i,k,j) = 0. ! (yueqin-4/17/24)
          ENDDO
          ENDDO
          ENDDO
@@ -286,6 +391,35 @@ CONTAINS
        athralw(i,k,j)  =  athralw(i,k,j)  +  rthratenlw(i,k,j)*dt
        athrasw(i,k,j)  =  athrasw(i,k,j)  +  rthratensw(i,k,j)*dt
           athf(i,k,j)  =  athf(i,k,j)  +  rthften(i,k,j)*dt ! added by yueqin
+          au_tend(i,k,j)  =  au_tend(i,k,j)  +  ru_tend(i,k,j)*dt ! (yueqin-4/17/24)
+          au_tend_cor(i,k,j)  =  au_tend_cor(i,k,j)  +  ru_tend_cor(i,k,j)*dt ! (yueqin-4/17/24)
+          au_tend_adv(i,k,j)  =  au_tend_adv(i,k,j)  +  ru_tend_adv(i,k,j)*dt ! (yueqin-4/17/24)
+          au_tend_pgf(i,k,j)  =  au_tend_pgf(i,k,j)  +  ru_tend_pgf(i,k,j)*dt ! (yueqin-4/17/24)
+          au_tend_curv(i,k,j)  =  au_tend_curv(i,k,j)  +  ru_tend_curv(i,k,j)*dt ! (yueqin-4/17/24)
+          au_tend_hdiff(i,k,j)  =  au_tend_hdiff(i,k,j)  +  ru_tend_hdiff(i,k,j)*dt ! (yueqin-4/17/24)
+          au_tend_6thdiff(i,k,j)  =  au_tend_6thdiff(i,k,j)  +  ru_tend_6thdiff(i,k,j)*dt ! (yueqin-4/17/24)
+          au_tend_phys(i,k,j)  =  au_tend_phys(i,k,j)  +  ru_tend_phys(i,k,j)*dt ! (yueqin-4/17/24)
+          av_tend(i,k,j)  =  av_tend(i,k,j)  +  rv_tend(i,k,j)*dt ! (yueqin-4/17/24)
+          av_tend_cor(i,k,j)  =  av_tend_cor(i,k,j)  +  rv_tend_cor(i,k,j)*dt ! (yueqin-4/17/24)
+          av_tend_adv(i,k,j)  =  av_tend_adv(i,k,j)  +  rv_tend_adv(i,k,j)*dt ! (yueqin-4/17/24)
+          av_tend_pgf(i,k,j)  =  av_tend_pgf(i,k,j)  +  rv_tend_pgf(i,k,j)*dt ! (yueqin-4/17/24)
+          av_tend_curv(i,k,j)  =  av_tend_curv(i,k,j)  +  rv_tend_curv(i,k,j)*dt ! (yueqin-4/17/24)
+          av_tend_hdiff(i,k,j)  =  av_tend_hdiff(i,k,j)  +  rv_tend_hdiff(i,k,j)*dt ! (yueqin-4/17/24)
+          av_tend_6thdiff(i,k,j)  =  av_tend_6thdiff(i,k,j)  +  rv_tend_6thdiff(i,k,j)*dt ! (yueqin-4/17/24)
+          av_tend_phys(i,k,j)  =  av_tend_phys(i,k,j)  +  rv_tend_phys(i,k,j)*dt ! (yueqin-4/17/24)
+          aw_tend(i,k,j)  =  aw_tend(i,k,j)  +  rw_tend(i,k,j)*dt ! (yueqin-4/17/24)
+          aw_tend_cor(i,k,j)  =  aw_tend_cor(i,k,j)  +  rw_tend_cor(i,k,j)*dt ! (yueqin-4/17/24)
+          aw_tend_adv(i,k,j)  =  aw_tend_adv(i,k,j)  +  rw_tend_adv(i,k,j)*dt ! (yueqin-4/17/24)
+          aw_tend_curv(i,k,j)  =  aw_tend_curv(i,k,j)  +  rw_tend_curv(i,k,j)*dt ! (yueqin-4/17/24)
+          aw_tend_buoy(i,k,j)  =  aw_tend_buoy(i,k,j)  +  rw_tend_buoy(i,k,j)*dt ! (yueqin-4/17/24)
+          aw_tend_6thdiff(i,k,j)  =  aw_tend_6thdiff(i,k,j)  +  rw_tend_6thdiff(i,k,j)*dt ! (yueqin-4/17/24)
+          at_tend(i,k,j)  =  at_tend(i,k,j)  +  t_tend(i,k,j)*dt ! (yueqin-4/17/24)
+          at_tend_adv(i,k,j)  =  at_tend_adv(i,k,j)  +  t_tend_adv(i,k,j)*dt ! (yueqin-4/17/24)
+          at_tend_hdiff(i,k,j)  =  at_tend_hdiff(i,k,j)  +  t_tend_hdiff(i,k,j)*dt ! (yueqin-4/17/24)
+          at_tend_6thdiff(i,k,j)  =  at_tend_6thdiff(i,k,j)  +  t_tend_6thdiff(i,k,j)*dt ! (yueqin-4/17/24)
+          at_tend_phys(i,k,j)  =  at_tend_phys(i,k,j)  +  t_tend_phys(i,k,j)*dt ! (yueqin-4/17/24)
+          at_tend_phys_bl(i,k,j)  =  at_tend_phys_bl(i,k,j)  +  t_tend_phys_bl(i,k,j)*dt ! (yueqin-4/17/24)
+          at_tend_phys_rad(i,k,j)  =  at_tend_phys_rad(i,k,j)  +  t_tend_phys_rad(i,k,j)*dt ! (yueqin-4/17/24)
       ENDDO
       ENDDO
       ENDDO
