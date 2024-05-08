@@ -1,5 +1,6 @@
 !This code was adapted by code from N. Moisseeva. Her original files, and instructions for using the code, can be found at https://open.library.ubc.ca/soa/cIRcle/collections/ubctheses/24/items/1.0165884.
 !These additions are marked by the initials NM. Further modifications were made by E. Potter in 2017, and are marked by the initials EP. They were used in version 4.4.2 of the WRF code.
+!This code was modified by Yue Qin 4/17/24 to decouple physics and rk tendencies in momentum/thermodynamic budgets.
 !This module is in the dyn_em directory
 
 !WRF:MEDIATION_LAYER:SOLVER
@@ -886,7 +887,7 @@ BENCH_START(rk_tend_tim)
 
        CALL wrf_debug ( 200 , ' call rk_tendency' )
        CALL rk_tendency ( config_flags, rk_step                                                                &
-                         ,grid%ru_tend, grid%rv_tend, grid%rw_tend, ph_tend, grid%t_tend                                 &
+                         ,grid%ru_tend, grid%rv_tend, grid%rw_tend, ph_tend, grid%t_tend                                 & ! (yueqin-4/17/24)
                          ,grid%ru_tend_cor, grid%ru_tend_adv, grid%ru_tend_pgf, grid%ru_tend_curv, grid%ru_tend_6thdiff      & !added line for u tendencies (NM) & 6diff (EP)
                          ,grid%rv_tend_cor, grid%rv_tend_adv, grid%rv_tend_pgf, grid%rv_tend_curv, grid%rv_tend_6thdiff      & !added line for v tendencies (NM) & 6diff (EP)
                          ,grid%rw_tend_cor, grid%rw_tend_adv, grid%rw_tend_buoy, grid%rw_tend_curv, grid%rw_tend_6thdiff      & !added line for w tendencies (NM) & 6diff (EP)
@@ -975,7 +976,7 @@ BENCH_START(relax_bdy_dry_tim)
 
        ENDIF
 
-       CALL rk_addtend_dry( grid%ru_tend,  grid%rv_tend,  grid%rw_tend,  ph_tend,  grid%t_tend,  &
+       CALL rk_addtend_dry( grid%ru_tend,  grid%rv_tend,  grid%rw_tend,  ph_tend,  grid%t_tend,  &  ! (yueqin-4/17/24)
                             ru_tendf, rv_tendf, rw_tendf, ph_tendf, t_tendf, &
                             grid%u_save, grid%v_save, w_save, ph_save, grid%t_save, &
                             mu_tend, mu_tendf, rk_step,                      &
@@ -992,8 +993,8 @@ BENCH_START(relax_bdy_dry_tim)
 
        IF( config_flags%specified .or. config_flags%nested ) THEN 
          CALL spec_bdy_dry ( config_flags,                                    &
-                             grid%ru_tend, grid%rv_tend, ph_tend, grid%t_tend,               &
-                             grid%rw_tend, mu_tend,                                &
+                             grid%ru_tend, grid%rv_tend, ph_tend, grid%t_tend,               & ! (yueqin-4/17/24)
+                             grid%rw_tend, mu_tend,                                & ! (yueqin-4/17/24)
                              grid%u_bxs,grid%u_bxe,grid%u_bys,grid%u_bye, &
                              grid%v_bxs,grid%v_bxe,grid%v_bys,grid%v_bye, &
                              grid%ph_bxs,grid%ph_bxe,grid%ph_bys,grid%ph_bye, &
@@ -1024,7 +1025,7 @@ BENCH_START(relax_bdy_dry_tim)
 !---------------------------------------------------------------------------------------------
        IF( config_flags%specified .and. config_flags%perturb_bdy==1 ) THEN 
          CALL spec_bdy_dry_perturb ( config_flags,                                 &
-                             grid%ru_tend, grid%rv_tend, grid%t_tend,                   &
+                             grid%ru_tend, grid%rv_tend, grid%t_tend,                   & ! (yueqin-4/17/24)
                              grid%mu_2, grid%mub, grid%c1h, grid%c2h,              &
                              grid%msfux, grid%msfvx, grid%msft,	                   &
                              grid%ru_tendf_stoch, grid%rv_tendf_stoch, grid%rt_tendf_stoch, &
@@ -1041,7 +1042,7 @@ BENCH_START(relax_bdy_dry_tim)
 
        IF( config_flags%specified .and. config_flags%perturb_bdy==2 ) THEN
          CALL spec_bdy_dry_perturb ( config_flags,                                 &
-                             grid%ru_tend, grid%rv_tend, grid%t_tend,                   &
+                             grid%ru_tend, grid%rv_tend, grid%t_tend,                   & !(4/17/24)
                              grid%mu_2, grid%mub, grid%c1h, grid%c2h,              &
                              grid%msfux, grid%msfvx, grid%msft,                    &
                              grid%field_u_tend_perturb, grid%field_v_tend_perturb, grid%field_t_tend_perturb, &
@@ -1100,7 +1101,7 @@ BENCH_START(small_step_prep_tim)
        CALL small_step_prep( grid%u_1,grid%u_2,grid%v_1,grid%v_2,grid%w_1,grid%w_2,   &
                              grid%t_1,grid%t_2,grid%ph_1,grid%ph_2,                   &
                              grid%mub, grid%mu_1, grid%mu_2,                          &
-                             grid%muu, muus, grid%muv, muvs,                &
+                             grid%muu, grid%muus, grid%muv, grid%muvs,                &
                              grid%mut, grid%muts, grid%mudf,                          &
                              grid%c1h, grid%c2h, grid%c1f, grid%c2f,                  &
                              grid%c3h, grid%c4h, grid%c3f, grid%c4f,                  &
@@ -1422,7 +1423,7 @@ BENCH_START(advance_mu_t_tim)
                           grid%c1h, grid%c2h, grid%c1f, grid%c2f,                       &
                           grid%c3h, grid%c4h, grid%c3f, grid%c4f,                       &
                           grid%ru_m, grid%rv_m, grid%ww_m,                              &
-                          grid%t_2, grid%t_save, t_2save, grid%t_tend,                       &
+                          grid%t_2, grid%t_save, t_2save, grid%t_tend,                       & ! (yueqin-4/17/24)
                           mu_tend,                                                      &
                           grid%rdx, grid%rdy, dts_rk, grid%epssm,                       &
                           grid%dnw, grid%fnm, grid%fnp, grid%rdnw,                      &
@@ -1485,7 +1486,7 @@ BENCH_START(spec_bdy_t_tim)
 
          IF( config_flags%specified .or. config_flags%nested ) THEN
 
-           CALL spec_bdyupdate(grid%t_2, grid%t_tend, dts_rk,        &
+           CALL spec_bdyupdate(grid%t_2, grid%t_tend, dts_rk,        & ! (yueqin-4/17/24)
                                't'         , config_flags,      &
                                grid%spec_zone,                  &
                                ids,ide, jds,jde, kds,kde,       &
@@ -1523,7 +1524,7 @@ BENCH_END(spec_bdy_t_tim)
 
 BENCH_START(advance_w_tim)
          IF ( config_flags%non_hydrostatic ) THEN
-           CALL advance_w( grid%w_2, grid%rw_tend, grid%ww, w_save,         &
+           CALL advance_w( grid%w_2, grid%rw_tend, grid%ww, w_save,         & ! (yueqin-4/17/24)
                            grid%u_2, grid%v_2,                         &
                            grid%mu_2, grid%mut, muave, grid%muts,      &
                            grid%c1h, grid%c2h, grid%c1f, grid%c2f,     &
@@ -1636,7 +1637,7 @@ BENCH_START(spec_bdynhyd_tim)
                                     grid%j_start(ij), grid%j_end(ij), &
                                     k_start    , k_end                )
              ELSE
-               CALL spec_bdyupdate ( grid%w_2, grid%rw_tend, dts_rk,       &
+               CALL spec_bdyupdate ( grid%w_2, grid%rw_tend, dts_rk,       & ! (yueqin-4/17/24)
                                      'h'         , config_flags,      &
                                      grid%spec_zone,                  &
                                      ids,ide, jds,jde, kds,kde,       &
@@ -1761,7 +1762,7 @@ BENCH_END(phys_bc_tim)
 
 BENCH_START(calc_mu_uv_tim)
        CALL calc_mu_uv_1 ( config_flags,                     &
-                           grid%muts, muus, muvs,  &
+                           grid%muts, grid%muus, grid%muvs,  &
                            ids, ide, jds, jde, kds, kde,     &
                            ims, ime, jms, jme, kms, kme,     &
                            grid%i_start(ij), grid%i_end(ij), &
@@ -1772,7 +1773,7 @@ BENCH_START(small_step_finish_tim)
        CALL small_step_finish( grid%u_2, grid%u_1, grid%v_2, grid%v_1, grid%w_2, grid%w_1,     &
                                grid%t_2, grid%t_1, grid%ph_2, grid%ph_1, grid%ww, ww1,    &
                                grid%mu_2, grid%mu_1,                       &
-                               grid%mut, grid%muts, grid%muu, muus, grid%muv, muvs,  & 
+                               grid%mut, grid%muts, grid%muu, grid%muus, grid%muv, grid%muvs,  & 
                                grid%c1h, grid%c2h, grid%c1f, grid%c2f, &
                                grid%c3h, grid%c4h, grid%c3f, grid%c4f, &
                                grid%u_save, grid%v_save, w_save,           &
@@ -3508,7 +3509,7 @@ BENCH_END(bc_end_tim)
 
            call trajectory (grid,config_flags,                                     &
                             grid%dt,grid%itimestep,grid%ru_m, grid%rv_m, grid%ww_m,&
-                            grid%muts,muus,muvs,                         &
+                            grid%muts,grid%muus,grid%muvs,                         &
                             grid%c1h, grid%c2h, grid%c1f, grid%c2f,                &
                             grid%rdx, grid%rdy, grid%rdn, grid%rdnw,grid%rdzw,     &
                             grid%traj_i,grid%traj_j,grid%traj_k,                   &
@@ -3614,7 +3615,7 @@ BENCH_END(advance_ppt_tim)
    DO ij = 1 , grid%num_tiles
         CALL wrf_debug ( 200 , ' call phy_prep_part2' )
         CALL phy_prep_part2 ( config_flags,                              &
-                        grid%muts, muus, muvs,                 &
+                        grid%muts, grid%muus, grid%muvs,                 &
                         grid%c1h, grid%c2h, grid%c1f, grid%c2f,          &
                         grid%rthraten,                                   &
                         grid%rthblten, grid%rublten, grid%rvblten,       &
@@ -3626,6 +3627,17 @@ BENCH_END(advance_ppt_tim)
                         grid%rqvshten, grid%rqcshten, grid%rqrshten,     &
                         grid%rqishten, grid%rqsshten, grid%rqgshten,     &
                         grid%rthften,  grid%rqvften,                     &
+                        grid%ru_tend, grid%ru_tend_cor, grid%ru_tend_adv,               &
+                        grid%ru_tend_pgf, grid%ru_tend_curv, grid%ru_tend_hdiff,        &
+                        grid%ru_tend_6thdiff, grid%ru_tend_phys,                        & !added line for u tendencies (yueqin-4/17/24)
+                        grid%rv_tend, grid%rv_tend_cor, grid%rv_tend_adv,               &
+                        grid%rv_tend_pgf, grid%rv_tend_curv, grid%rv_tend_hdiff,        &
+                        grid%rv_tend_6thdiff, grid%rv_tend_phys,                        & !added line for v tendencies (yueqin-4/17/24)
+                        grid%rw_tend, grid%rw_tend_cor, grid%rw_tend_adv,               &
+                        grid%rw_tend_buoy, grid%rw_tend_curv, grid%rw_tend_6thdiff,     & !added line for w tendencies (yueqin-4/17/24)
+                        grid%t_tend, grid%t_tend_adv, grid%t_tend_hdiff,                & 
+                        grid%t_tend_6thdiff, grid%t_tend_phys,                          &
+                        grid%t_tend_phys_bl, grid%t_tend_phys_rad,                      & !added line for t (yueqin-4/17/24)
                         grid%RUNDGDTEN, grid%RVNDGDTEN, grid%RTHNDGDTEN, &
                         grid%RPHNDGDTEN,grid%RQVNDGDTEN, grid%RMUNDGDTEN,&
                         grid%t_2, th_phy, moist(ims,kms,jms,P_QV),       &
@@ -4564,7 +4576,7 @@ BENCH_END(bc_2d_tim)
 
      CALL wrf_debug ( 200 , ' call spec_bdy_final' )
 
-     CALL spec_bdy_final   ( grid%u_2, muus, grid%c1h, grid%c2h, grid%msfuy,     &
+     CALL spec_bdy_final   ( grid%u_2, grid%muus, grid%c1h, grid%c2h, grid%msfuy,     &
                                 grid%u_bxs, grid%u_bxe, grid%u_bys, grid%u_bye,  &
                                 grid%u_btxs,grid%u_btxe,grid%u_btys,grid%u_btye, &
                                 'u', config_flags,                               &
@@ -4577,7 +4589,7 @@ BENCH_END(bc_2d_tim)
                                 grid%j_start(ij), grid%j_end(ij),       &
                                 k_start    , k_end                     )
 
-     CALL spec_bdy_final   ( grid%v_2, muvs, grid%c1h, grid%c2h, grid%msfvx,     &
+     CALL spec_bdy_final   ( grid%v_2, grid%muvs, grid%c1h, grid%c2h, grid%msfvx,     &
                                 grid%v_bxs, grid%v_bxe, grid%v_bys, grid%v_bye,  &
                                 grid%v_btxs,grid%v_btxe,grid%v_btys,grid%v_btye, &
                                 'v', config_flags,                               &

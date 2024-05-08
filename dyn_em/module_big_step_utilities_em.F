@@ -1,3 +1,6 @@
+!This code was adapted by code from N. Moisseeva. Her original files, and instructions for using the code, can be found at https://open.library.ubc.ca/soa/cIRcle/collections/ubctheses/24/items/1.0165884.
+!These additions are marked by the initials NM. Further modifications were made by E. Potter in 2017, and are marked by the initials EP. They were used in version 4.4.2 of the WRF code.
+!This code was modified by Yue Qin 4/17/24 to decouple physics and rk tendencies in momentum/thermodynamic budgets.
 
 !wrf:MODEL_LAYER:DYNAMICS
 !
@@ -4990,6 +4993,17 @@ END SUBROUTINE phy_prep
                          RQVSHTEN, RQCSHTEN, RQRSHTEN,                &
                          RQISHTEN, RQSSHTEN, RQGSHTEN,                &
                          RTHFTEN,  RQVFTEN,                           &
+                         ru_tend, ru_tend_cor, ru_tend_adv,               &
+                         ru_tend_pgf, ru_tend_curv, ru_tend_hdiff,        &
+                         ru_tend_6thdiff, ru_tend_phys,                        & !added line for u tendencies (yueqin-4/17/24)
+                         rv_tend, rv_tend_cor, rv_tend_adv,               &
+                         rv_tend_pgf, rv_tend_curv, rv_tend_hdiff,        &
+                         rv_tend_6thdiff, rv_tend_phys,                        & !added line for v tendencies (yueqin-4/17/24)
+                         rw_tend, rw_tend_cor, rw_tend_adv,               &
+                         rw_tend_buoy, rw_tend_curv, rw_tend_6thdiff,     & !added line for w tendencies (yueqin-4/17/24)
+                         t_tend, t_tend_adv, t_tend_hdiff,                & 
+                         t_tend_6thdiff, t_tend_phys,                          &
+                         t_tend_phys_bl, t_tend_phys_rad,                      & !added line for t (yueqin-4/17/24)
                          RUNDGDTEN, RVNDGDTEN, RTHNDGDTEN,            &
                          RPHNDGDTEN,RQVNDGDTEN, RMUNDGDTEN,           &
                          t_new, th_phy, qv,                           &
@@ -5041,6 +5055,37 @@ END SUBROUTINE phy_prep
    REAL,  DIMENSION( ims:ime, kms:kme, jms:jme )                   , &
           INTENT(INOUT)   ::                                RTHFTEN, &
                                                             RQVFTEN
+
+   REAL,  DIMENSION( ims:ime, kms:kme, jms:jme )                   ,         &  !(yueqin-4/17/24)
+          INTENT(INOUT)   ::                                ru_tend,         &
+                                                            ru_tend_cor,     &
+                                                            ru_tend_adv,     &
+                                                            ru_tend_pgf,     &
+                                                            ru_tend_curv,    &   
+                                                            ru_tend_hdiff,   &
+                                                            ru_tend_6thdiff, & 
+                                                            ru_tend_phys,    &
+                                                            rv_tend,         &
+                                                            rv_tend_cor,     &
+                                                            rv_tend_adv,     &
+                                                            rv_tend_pgf,     &
+                                                            rv_tend_curv,    &   
+                                                            rv_tend_hdiff,   &
+                                                            rv_tend_6thdiff, & 
+                                                            rv_tend_phys,    &
+                                                            rw_tend,         &
+                                                            rw_tend_cor,     &
+                                                            rw_tend_adv,     &
+                                                            rw_tend_buoy,    &
+                                                            rw_tend_curv,    &   
+                                                            rw_tend_6thdiff, & 
+                                                            t_tend,          &
+                                                            t_tend_adv,      &
+                                                            t_tend_hdiff,    & 
+                                                            t_tend_6thdiff,  & 
+                                                            t_tend_phys,     &
+                                                            t_tend_phys_bl,  &
+                                                            t_tend_phys_rad
 
    REAL,  DIMENSION( ims:ime, kms:kme, jms:jme )                   , &
           INTENT(INOUT)   ::                                RUNDGDTEN, &
@@ -5096,6 +5141,7 @@ END SUBROUTINE phy_prep
       DO K=k_start,k_end
       DO I=i_start,i_end
          RTHRATEN(I,K,J)=RTHRATEN(I,K,J)/(c1(k)*MUT(I,J)+c2(k))
+         t_tend_phys_rad(I,K,J) = t_tend_phys_rad(I,K,J)/(c1(k)*MUT(I,J)+c2(k)) !(yueqin-4/17/24)
       ENDDO
       ENDDO
       ENDDO
@@ -5248,6 +5294,7 @@ END SUBROUTINE phy_prep
          RUBLTEN(I,K,J) =RUBLTEN(I,K,J)/(c1(k)*MUT(I,J)+c2(k))
          RVBLTEN(I,K,J) =RVBLTEN(I,K,J)/(c1(k)*MUT(I,J)+c2(k))
          RTHBLTEN(I,K,J)=RTHBLTEN(I,K,J)/(c1(k)*MUT(I,J)+c2(k))
+         t_tend_phys_bl(I,K,J)=t_tend_phys_bl(I,K,J)/(c1(k)*MUT(I,J)+c2(k)) !(yueqin-4/17/24)
       ENDDO
       ENDDO
       ENDDO
@@ -5315,9 +5362,44 @@ END SUBROUTINE phy_prep
       DO I=i_start,i_end
          DO K=k_start,k_end
             RTHFTEN(I,K,J)=RTHFTEN(I,K,J)/(c1(k)*MUT(I,J)+c2(k))
+            ru_tend_cor(I,K,J)=ru_tend_cor(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            ru_tend_adv(I,K,J)=ru_tend_adv(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            ru_tend_pgf(I,K,J)=ru_tend_pgf(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            ru_tend_curv(I,K,J)=ru_tend_curv(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            ru_tend_hdiff(I,K,J)=ru_tend_hdiff(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            ru_tend_6thdiff(I,K,J)=ru_tend_6thdiff(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rv_tend_cor(I,K,J)=rv_tend_cor(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rv_tend_adv(I,K,J)=rv_tend_adv(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rv_tend_pgf(I,K,J)=rv_tend_pgf(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rv_tend_curv(I,K,J)=rv_tend_curv(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rv_tend_hdiff(I,K,J)=rv_tend_hdiff(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rv_tend_6thdiff(I,K,J)=rv_tend_6thdiff(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rw_tend_cor(I,K,J)=rw_tend_cor(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rw_tend_adv(I,K,J)=rw_tend_adv(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rw_tend_curv(I,K,J)=rw_tend_curv(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rw_tend_buoy(I,K,J)=rw_tend_buoy(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            rw_tend_6thdiff(I,K,J)=rw_tend_6thdiff(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            t_tend_adv(I,K,J)=t_tend_adv(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            t_tend_hdiff(I,K,J)=t_tend_hdiff(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
+            t_tend_6thdiff(I,K,J)=t_tend_6thdiff(I,K,J)/(c1(k)*MUT(I,J)+c2(k))  !(yueqin-4/17/24)
          ENDDO
       ENDDO
       ENDDO
+
+!  decouple other tendency terms (yueqin-4/17/24)
+    DO J=j_start,j_end
+    DO K=k_start,k_end
+    DO I=i_start,i_end
+         ru_tend(I,K,J)=ru_tend(I,K,J)/(c1(k)*MUT(I,J)+c2(k)) !(yueqin-4/17/24)
+         rv_tend(I,K,J)=rv_tend(I,K,J)/(c1(k)*MUT(I,J)+c2(k)) !(yueqin-4/17/24)
+         rw_tend(I,K,J)=rw_tend(I,K,J)/(c1(k)*MUT(I,J)+c2(k)) !(yueqin-4/17/24)
+         t_tend(I,K,J)=t_tend(I,K,J)/(c1(k)*MUT(I,J)+c2(k)) !(yueqin-4/17/24)
+         ru_tend_phys(I,K,J)=ru_tend_phys(I,K,J)/(c1(k)*MUT(I,J)+c2(k)) !(yueqin-4/17/24)
+         rv_tend_phys(I,K,J)=ru_tend_phys(I,K,J)/(c1(k)*MUT(I,J)+c2(k)) !(yueqin-4/17/24)
+         t_tend_phys(I,K,J)=t_tend_phys(I,K,J)/(c1(k)*MUT(I,J)+c2(k)) !(yueqin-4/17/24)
+    ENDDO
+    ENDDO
+    ENDDO
 
 !  If using moist theta, get dry theta tendency for CPSs
       IF ( config_flags%use_theta_m == 1 ) THEN
