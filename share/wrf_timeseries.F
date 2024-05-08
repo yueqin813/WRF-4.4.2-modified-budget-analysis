@@ -8,6 +8,12 @@
 !     output W, added by Pat Hawbecker -- Jan 2019
 ! ability to output O3 (chem), added by Xin Zhang -- Feb 2020
 ! 
+! add 29 tendency terms from momentum and thermodynamic budgets by Yue Qin -- Apr 2024
+!ru_tend,ru_tend_cor,ru_tend_adv,ru_tend_pgf,ru_tend_curv,ru_tend_hdiff,ru_tend_6thdiff,ru_tend_phys
+!rv_tend,rv_tend_cor,rv_tend_adv,rv_tend_pgf,rv_tend_curv,rv_tend_hdiff,rv_tend_6thdiff,rv_tend_phys
+!rw_tend,rw_tend_cor,rw_tend_adv,rw_tend_curv,rw_tend_buoy,rw_tend_6thdiff
+!t_tend,t_tend_adv,t_tend_hdiff,t_tend_6thdiff,t_tend_phys,t_tend_phys_bl,t_tend_phys_rad
+!WRF:MEDIATION_LAYER:SHARE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE calc_ts_locations( grid )
 
@@ -39,9 +45,16 @@ SUBROUTINE calc_ts_locations( grid )
    CHARACTER (LEN=2), DIMENSION(TS_FIELDS) :: &
       ts_file_endings = (/ 'UU', 'VV', 'PH', 'TH', 'QV' ,'WW', 'PR', 'O3'/)
 #else
-   INTEGER, PARAMETER :: TS_FIELDS = 7
-   CHARACTER (LEN=2), DIMENSION(TS_FIELDS) :: &
-      ts_file_endings = (/ 'UU', 'VV', 'PH', 'TH', 'QV' ,'WW', 'PR'/) 
+   INTEGER, PARAMETER :: TS_FIELDS = 36  ! changed from 7 to 36 by yueqin-4/17/24
+   ! First, determine the maximum length needed. For example, 'RVTENDPHYS' has 10 characters.
+   CHARACTER (LEN=15), DIMENSION(TS_FIELDS) :: &
+   ts_file_endings = (/ 'UU', 'VV', 'PH', 'TH', 'QV', 'WW', 'PR', 'RUTEND', &
+       'RUTEND6THDIFF', 'RUTENDADV', 'RUTENDCOR', 'RUTENDCURV', 'RUTENDHDIFF', &
+       'RUTENDPGF', 'RUTENDPHYS', 'RVTEND', 'RVTEND6THDIFF', 'RVTENDADV', &
+       'RVTENDCOR', 'RVTENDCURV', 'RVTENDHDIFF', 'RVTENDPGF', 'RVTENDPHYS', &
+       'RWTEND', 'RWTEND6THDIFF', 'RWTENDADV', 'RWTENDCOR', 'RWTENDCURV', &
+       'RWTENDBUOY', 'THTEND', 'THTEND6THDIFF', 'THTENDADV', 'THTENDHDIFF', &
+       'THTENDPHYS', 'THTENDPHYSBL', 'THTENDPHYSRAD' /)  ! (yueqin-4/17/24)
 #endif
    INTEGER   ierr
    CHARACTER (len=19) simulation_start_date
@@ -459,6 +472,39 @@ SUBROUTINE calc_ts( grid )
             END IF
             grid%ts_qv_profile(n,i,k)  = grid%moist(ix,k,iy,P_QV)
             grid%ts_p_profile(n,i,k)   = grid%pb(ix,k,iy)+grid%p(ix,k,iy)
+            ! u-velocity tendencies
+            grid%ts_rutend_profile(n,i,k) = grid%ru_tend(ix,k,iy)                     ! (yueqin-4/17/24)
+            grid%ts_rutend_6thdiff_profile(n,i,k) = grid%ru_tend_6thdiff(ix,k,iy)     ! (yueqin-4/17/24)
+            grid%ts_rutend_adv_profile(n,i,k) = grid%ru_tend_adv(ix,k,iy)             ! (yueqin-4/17/24)
+            grid%ts_rutend_cor_profile(n,i,k) = grid%ru_tend_cor(ix,k,iy)             ! (yueqin-4/17/24)
+            grid%ts_rutend_curv_profile(n,i,k) = grid%ru_tend_curv(ix,k,iy)           ! (yueqin-4/17/24)
+            grid%ts_rutend_hdiff_profile(n,i,k) = grid%ru_tend_hdiff(ix,k,iy)         ! (yueqin-4/17/24)
+            grid%ts_rutend_pgf_profile(n,i,k) = grid%ru_tend_pgf(ix,k,iy)             ! (yueqin-4/17/24)
+            grid%ts_rutend_phys_profile(n,i,k) = grid%ru_tend_phys(ix,k,iy)           ! (yueqin-4/17/24)
+            ! v-velocity tendencies
+            grid%ts_rvtend_profile(n,i,k) = grid%rv_tend(ix,k,iy)                     ! (yueqin-4/17/24)
+            grid%ts_rvtend_6thdiff_profile(n,i,k) = grid%rv_tend_6thdiff(ix,k,iy)     ! (yueqin-4/17/24)
+            grid%ts_rvtend_adv_profile(n,i,k) = grid%rv_tend_adv(ix,k,iy)             ! (yueqin-4/17/24)
+            grid%ts_rvtend_cor_profile(n,i,k) = grid%rv_tend_cor(ix,k,iy)             ! (yueqin-4/17/24)
+            grid%ts_rvtend_curv_profile(n,i,k) = grid%rv_tend_curv(ix,k,iy)           ! (yueqin-4/17/24)
+            grid%ts_rvtend_hdiff_profile(n,i,k) = grid%rv_tend_hdiff(ix,k,iy)         ! (yueqin-4/17/24)
+            grid%ts_rvtend_pgf_profile(n,i,k) = grid%rv_tend_pgf(ix,k,iy)             ! (yueqin-4/17/24)
+            grid%ts_rvtend_phys_profile(n,i,k) = grid%rv_tend_phys(ix,k,iy)           ! (yueqin-4/17/24)
+            ! w-velocity tendencies
+            grid%ts_rwtend_profile(n,i,k) = grid%rw_tend(ix,k,iy)                     ! (yueqin-4/17/24)
+            grid%ts_rwtend_6thdiff_profile(n,i,k) = grid%rw_tend_6thdiff(ix,k,iy)     ! (yueqin-4/17/24)
+            grid%ts_rwtend_adv_profile(n,i,k) = grid%rw_tend_adv(ix,k,iy)             ! (yueqin-4/17/24)
+            grid%ts_rwtend_cor_profile(n,i,k) = grid%rw_tend_cor(ix,k,iy)             ! (yueqin-4/17/24)
+            grid%ts_rwtend_curv_profile(n,i,k) = grid%rw_tend_curv(ix,k,iy)           ! (yueqin-4/17/24)
+            grid%ts_rwtend_buoy_profile(n,i,k) = grid%rw_tend_buoy(ix,k,iy)              ! (yueqin-4/17/24)
+            ! theta tendencies
+            grid%ts_thtend_profile(n,i,k) = grid%t_tend(ix,k,iy)                      ! (yueqin-4/17/24)
+            grid%ts_thtend_adv_profile(n,i,k) = grid%t_tend_adv(ix,k,iy)              ! (yueqin-4/17/24)
+            grid%ts_thtend_hdiff_profile(n,i,k) = grid%t_tend_hdiff(ix,k,iy)          ! (yueqin-4/17/24)
+            grid%ts_thtend_6thdiff_profile(n,i,k) = grid%t_tend_6thdiff(ix,k,iy)      ! (yueqin-4/17/24)
+            grid%ts_thtend_phys_profile(n,i,k) = grid%t_tend_phys(ix,k,iy)            ! (yueqin-4/17/24)
+            grid%ts_thtend_phys_bl_profile(n,i,k) = grid%t_tend_phys_bl(ix,k,iy)      ! (yueqin-4/17/24)
+            grid%ts_thtend_phys_rad_profile(n,i,k) = grid%t_tend_phys_rad(ix,k,iy)    ! (yueqin-4/17/24)
             END DO
 #endif
 #if (WRF_CHEM == 1)
@@ -555,6 +601,39 @@ SUBROUTINE calc_ts( grid )
          grid%ts_th_profile(n,i,k)    = 1.E30
          grid%ts_qv_profile(n,i,k)    = 1.E30
          grid%ts_p_profile(n,i,k)     = 1.E30
+         ! u-velocity tendencies
+         grid%ts_rutend_profile(n,i,k) = 1.E30                     ! (yueqin-4/17/24)
+         grid%ts_rutend_6thdiff_profile(n,i,k) = 1.E30     ! (yueqin-4/17/24)
+         grid%ts_rutend_adv_profile(n,i,k) = 1.E30             ! (yueqin-4/17/24)
+         grid%ts_rutend_cor_profile(n,i,k) = 1.E30             ! (yueqin-4/17/24)
+         grid%ts_rutend_curv_profile(n,i,k) = 1.E30           ! (yueqin-4/17/24)
+         grid%ts_rutend_hdiff_profile(n,i,k) = 1.E30         ! (yueqin-4/17/24)
+         grid%ts_rutend_pgf_profile(n,i,k) = 1.E30             ! (yueqin-4/17/24)
+         grid%ts_rutend_phys_profile(n,i,k) = 1.E30             ! (yueqin-4/17/24)
+         ! v-velocity tendencies
+         grid%ts_rvtend_profile(n,i,k) = 1.E30                     ! (yueqin-4/17/24)
+         grid%ts_rvtend_6thdiff_profile(n,i,k) = 1.E30     ! (yueqin-4/17/24)
+         grid%ts_rvtend_adv_profile(n,i,k) = 1.E30             ! (yueqin-4/17/24)
+         grid%ts_rvtend_cor_profile(n,i,k) = 1.E30             ! (yueqin-4/17/24)
+         grid%ts_rvtend_curv_profile(n,i,k) = 1.E30           ! (yueqin-4/17/24)
+         grid%ts_rvtend_hdiff_profile(n,i,k) = 1.E30         ! (yueqin-4/17/24)
+         grid%ts_rvtend_pgf_profile(n,i,k) = 1.E30             ! (yueqin-4/17/24)
+         grid%ts_rvtend_phys_profile(n,i,k) = 1.E30             ! (yueqin-4/17/24)
+         ! w-velocity tendencies
+         grid%ts_rwtend_profile(n,i,k) = 1.E30                     ! (yueqin-4/17/24)
+         grid%ts_rwtend_6thdiff_profile(n,i,k) = 1.E30     ! (yueqin-4/17/24)
+         grid%ts_rwtend_adv_profile(n,i,k) = 1.E30             ! (yueqin-4/17/24)
+         grid%ts_rwtend_cor_profile(n,i,k) = 1.E30             ! (yueqin-4/17/24)
+         grid%ts_rwtend_curv_profile(n,i,k) = 1.E30           ! (yueqin-4/17/24)
+         grid%ts_rwtend_buoy_profile(n,i,k) = 1.E30              ! (yueqin-4/17/24)
+         ! theta tendencies
+         grid%ts_thtend_profile(n,i,k) = 1.E30                      ! (yueqin-4/17/24)
+         grid%ts_thtend_adv_profile(n,i,k) = 1.E30              ! (yueqin-4/17/24)
+         grid%ts_thtend_hdiff_profile(n,i,k) = 1.E30          ! (yueqin-4/17/24)
+         grid%ts_thtend_6thdiff_profile(n,i,k) = 1.E30      ! (yueqin-4/17/24)
+         grid%ts_thtend_phys_profile(n,i,k) = 1.E30            ! (yueqin-4/17/24)
+         grid%ts_thtend_phys_bl_profile(n,i,k) = 1.E30      ! (yueqin-4/17/24)
+         grid%ts_thtend_phys_rad_profile(n,i,k) = 1.E30    ! (yueqin-4/17/24)
          END DO
 #endif   
 #if (WRF_CHEM == 1)
@@ -701,6 +780,169 @@ SUBROUTINE write_ts( grid )
    ts_buf(:,:) = grid%ts_p_profile(:,:,k)
    CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_p_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
    END DO
+
+   ! u-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rutend_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rutend_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! u-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rutend_6thdiff_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rutend_6thdiff_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! u-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rutend_adv_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rutend_adv_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! u-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rutend_cor_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rutend_cor_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! u-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rutend_curv_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rutend_curv_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! u-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rutend_hdiff_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rutend_hdiff_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! u-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rutend_phys_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rutend_phys_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! v-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rvtend_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rvtend_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! v-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rvtend_6thdiff_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rvtend_6thdiff_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! v-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rvtend_adv_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rvtend_adv_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! v-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rvtend_cor_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rvtend_cor_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! v-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rvtend_curv_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rvtend_curv_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! v-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rvtend_hdiff_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rvtend_hdiff_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! v-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rvtend_phys_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rvtend_phys_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO   
+   
+   ! w-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rwtend_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rwtend_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! w-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rwtend_6thdiff_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rwtend_6thdiff_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! w-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rwtend_adv_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rwtend_adv_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! w-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rwtend_cor_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rwtend_cor_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! w-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rwtend_curv_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rwtend_curv_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! w-velocity tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_rwtend_buoy_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_rwtend_buoy_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO  
+
+   ! theta tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_thtend_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_thtend_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! theta tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_thtend_6thdiff_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_thtend_6thdiff_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! theta tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_thtend_adv_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_thtend_adv_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! theta tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_thtend_hdiff_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_thtend_hdiff_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+   
+   ! theta tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_thtend_phys_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_thtend_phys_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+
+   ! theta tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_thtend_phys_bl_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_thtend_phys_bl_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+
+   ! theta tendencies (yueqin-4/17/24)
+   DO k=1,grid%max_ts_level
+   ts_buf(:,:) = grid%ts_thtend_phys_rad_profile(:,:,k)
+   CALL wrf_dm_min_reals(ts_buf(:,:),grid%ts_thtend_phys_rad_profile(:,:,k),grid%ts_buf_size*grid%max_ts_locs)
+   END DO
+      
 #endif         
 #if (WRF_CHEM == 1)
    DO k=1,grid%max_ts_level
@@ -1110,7 +1352,558 @@ SUBROUTINE write_ts( grid )
                               grid%ts_p_profile(n,i,1:grid%max_ts_level)                                       
          END DO
          CLOSE(UNIT=iunit)
+         
+         !Write u-velocity tendency to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for u-velocity tendency profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTEND'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rutend_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write u-velocity tendency from numerical errors to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for u-velocity tendency from numerical errors profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTEND6THDIFF'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rutend_6thdiff_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write u-velocity tendency from advection to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for u-velocity tendency from advection profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDADV'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rutend_adv_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write u-velocity tendency from Coriolis force to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for u-velocity tendency from Coriolis force profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDCOR'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rutend_cor_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write u-velocity tendency from curvature to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for u-velocity tendency from curvature profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDCURV'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rutend_curv_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write u-velocity tendency from horizontal diffusion to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for u-velocity tendency from horizontal diffusion profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDHDIFF'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rutend_hdiff_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write u-velocity tendency from pressure gradient force to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for u-velocity tendency from pressure gradient force profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDPGF'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rutend_pgf_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write u-velocity tendency from physics to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for u-velocity tendency from physics profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDPHYS'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rutend_phys_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write v-velocity tendency to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for v-velocity tendency profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTEND'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rvtend_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write v-velocity tendency from numerical errors to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for v-velocity tendency from numerical errors profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTEND6THDIFF'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rvtend_6thdiff_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write v-velocity tendency from advection to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for v-velocity tendency from advection profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDADV'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rvtend_adv_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write v-velocity tendency from Coriolis force to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for v-velocity tendency from Coriolis force profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDCOR'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rvtend_cor_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write v-velocity tendency from curvature to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for v-velocity tendency from curvature profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDCURV'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rvtend_curv_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write v-velocity tendency from horizontal diffusion to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for v-velocity tendency from horizontal diffusion profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDHDIFF'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rvtend_hdiff_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write v-velocity tendency from pressure gradient force to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for v-velocity tendency from pressure gradient force profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDPGF'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rvtend_pgf_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write v-velocity tendency from physics to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for v-velocity tendency from physics profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDPHYS'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rvtend_phys_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write w-velocity tendency to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for w-velocity tendency profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTEND'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rwtend_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write w-velocity tendency from numerical errors to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for w-velocity tendency from numerical errors profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTEND6THDIFF'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rwtend_6thdiff_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write w-velocity tendency from advection to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for w-velocity tendency from advection profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDADV'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rwtend_adv_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write w-velocity tendency from Coriolis force to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for w-velocity tendency from Coriolis force profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDCOR'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rwtend_cor_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write w-velocity tendency from curvature to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for w-velocity tendency from curvature profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDCURV'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rwtend_curv_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write w-velocity tendency from buoyancy to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for w-velocity tendency from buoyancy profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDBUOY'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_rwtend_buoy_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write theta tendency to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for theta tendency profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTEND'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_thtend_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write theta tendency from numerical errors to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for theta tendency from numerical errors profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTEND6THDIFF'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_thtend_6thdiff_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write theta tendency from advection to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for theta tendency from advection profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDADV'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_thtend_adv_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write theta tendency from horizontal diffusion to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for theta tendency from horizontal diffusion profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDHDIFF'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_thtend_hdiff_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write theta tendency from physics to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for theta tendency from physics profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDPHYS'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_thtend_phys_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
+         !Write theta tendency from pbl physics to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for theta tendency from pbl physics profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDPHYSBL'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_thtend_phys_bl_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+
+         !Write theta tendency from radiation physics to separate file (yueqin-4/17/24)
+         iunit = get_unused_unit()
+            IF ( iunit <= 0 ) THEN
+            CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
+            END IF
+         !Recreate filename for theta tendency from radiation physics profiles (yueqin-4/17/24)
+         k = LEN_TRIM(ts_profile_filename)
+         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDPHYSRAD'
+         
+         OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
+
+         DO n=1,grid%next_ts_time - 1
+
+            WRITE(UNIT=iunit,FMT=profile_format)  &
+                              grid%ts_hour(n,i),             &
+                              grid%ts_thtend_phys_rad_profile(n,i,1:grid%max_ts_level)                                       
+         END DO
+         CLOSE(UNIT=iunit)
+         
 #endif   
 #if (WRF_CHEM == 1)
          !Write O3 profile to separate file
