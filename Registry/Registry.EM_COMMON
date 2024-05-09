@@ -4,7 +4,8 @@
 #This code was adapted by code from N. Moisseeva. Her original files, and instructions for using the code, can be found at https://open.library.ubc.ca/soa/cIRcle/collections/ubctheses/24/items/1.0165884.
 #These additions are marked by the initials NM. Further modifications were made by E. Potter in 2017, and are marked by the initials EP. They were used in version 4.4.2 of the WRF code.
 #This file is in the Registry directory.
-#This code was modified by yueqin-4/17/24 to output accumulated physics and rk tendencies in momentum/thermodynamic budgets.
+#Modified by yueqin-4/17/24 to output accumulated physics and rk tendencies in momentum/thermodynamic budgets.
+#Modifed by yueqin-5/8/24 to output RTHFTEN, RTHRATEN, RTHRATLW, RTHRATLWC, RTHRATSW, RTHRATSWC, RUBLTEN, RVBLTEN, RTHBLTEN in history files.
                                             
 ################################################################################
 # Dimension specifications
@@ -1739,16 +1740,16 @@ state    real  QI_BL            ikj      misc        1         -      r      "QI
 state integer  STEPAVE_COUNT     -       misc        1         -      r      "STEPAVE_COUNT"        "time steps contained in averages for convective transport" ""
 
 #
-state    real  RTHFTEN          ikj     misc        1         -      r        "RTHFTEN"               "TOTAL ADVECTIVE POTENTIAL TEMPERATURE TENDENCY"  "K s-1"
+state    real  RTHFTEN          ikj     misc        1         -      rh        "RTHFTEN"               "TOTAL ADVECTIVE POTENTIAL TEMPERATURE TENDENCY"  "K s-1"
 state    real  RQVFTEN          ikj     misc        1         -      r        "RQVFTEN"               "TOTAL ADVECTIVE MOISTURE TENDENCY"     "kg kg-1 s-1"
 
 state integer  STEPCU          -        misc        1         -      r        "STEPCU"                "NUMBER OF FUNDAMENTAL TIMESTEPS BETWEEN CONVECTION CALLS"  ""
                                                 
-state    real  RTHRATEN        ikj      misc        1         -      rd       "RTHRATEN"              "THETA TENDENCY DUE TO RADIATION"              "K s-1"
-state    real  RTHRATENLW      ikj      misc        1         -      r        "RTHRATLW"              "UNCOUPLED THETA TENDENCY DUE TO LONG WAVE RADIATION"    "K s-1"
-state    real  RTHRATENLWC     ikj      misc        1         -      r        "RTHRATLWC"             "UNCOUPLED THETA TEND DUE TO CLEAR SKY LONG WAVE RAD"    "K s-1"
-state    real  RTHRATENSW      ikj      misc        1         -      r        "RTHRATSW"              "UNCOUPLED THETA TENDENCY DUE TO SHORT WAVE RADIATION"   "K s-1"
-state    real  RTHRATENSWC     ikj      misc        1         -      r        "RTHRATSWC"             "UNCOUPLED THETA TEND DUE TO CLEAR SKY SHORT WAVE RAD"   "K s-1"
+state    real  RTHRATEN        ikj      misc        1         -      rhd       "RTHRATEN"              "THETA TENDENCY DUE TO RADIATION"              "K s-1"
+state    real  RTHRATENLW      ikj      misc        1         -      rh        "RTHRATLW"              "UNCOUPLED THETA TENDENCY DUE TO LONG WAVE RADIATION"    "K s-1"
+state    real  RTHRATENLWC     ikj      misc        1         -      rh        "RTHRATLWC"             "UNCOUPLED THETA TEND DUE TO CLEAR SKY LONG WAVE RAD"    "K s-1"
+state    real  RTHRATENSW      ikj      misc        1         -      rh        "RTHRATSW"              "UNCOUPLED THETA TENDENCY DUE TO SHORT WAVE RADIATION"   "K s-1"
+state    real  RTHRATENSWC     ikj      misc        1         -      rh        "RTHRATSWC"             "UNCOUPLED THETA TEND DUE TO CLEAR SKY SHORT WAVE RAD"   "K s-1"
 state    real  CLDFRA          ikj      misc        1         -      irh      "CLDFRA"                "CLOUD FRACTION"   ""
 state    real  CONVCLD          ij      misc        1         -      r        "CONVCLD"               "BMJ CONVECTIVE CLOUD" "kg m-2"
 state    real  CCLDFRA         ikj      misc        1         -      r        "CCLDFRA"               "CONVECTIVE CLOUD FRACTION" ""
@@ -1905,9 +1906,9 @@ state    real  NOAHRES          ij      misc        1         -      h        "N
 state    real  CLDEFI           ij      misc        1         -      r        "CLDEFI"                "precipitation efficiency in BMJ SCHEME"    ""      
 state integer  STEPRA          -        misc        1         -      r        "STEPRA"                "NUMBER OF FUNDAMENTAL TIMESTEPS BETWEEN RADIATION CALLS"        ""
                                                 
-state    real  RUBLTEN         ikj      misc        1         -      r        "RUBLTEN"               "X WIND TENDENCY DUE TO PBL PARAMETERIZATION"  "m s-2"
-state    real  RVBLTEN         ikj      misc        1         -      r        "RVBLTEN"               "Y WIND TENDENCY DUE TO PBL PARAMETERIZATION"  "m s-2"
-state    real  RTHBLTEN        ikj      misc        1         -      r        "RTHBLTEN"              "THETA TENDENCY DUE TO PBL PARAMETERIZATION"   "K s-1"
+state    real  RUBLTEN         ikj      misc        1         -      rh        "RUBLTEN"               "X WIND TENDENCY DUE TO PBL PARAMETERIZATION"  "m s-2"
+state    real  RVBLTEN         ikj      misc        1         -      rh        "RVBLTEN"               "Y WIND TENDENCY DUE TO PBL PARAMETERIZATION"  "m s-2"
+state    real  RTHBLTEN        ikj      misc        1         -      rh        "RTHBLTEN"              "THETA TENDENCY DUE TO PBL PARAMETERIZATION"   "K s-1"
 state    real  RQVBLTEN        ikj      misc        1         -      r        "RQVBLTEN"              "Q_V TENDENCY DUE TO PBL PARAMETERIZATION"     "kg kg-1 s-1"
 state    real  RQCBLTEN        ikj      misc        1         -      r        "RQCBLTEN"              "Q_C TENDENCY DUE TO PBL PARAMETERIZATION"     "kg kg-1 s-1"
 state    real  RQIBLTEN        ikj      misc        1         -      r        "RQIBLTEN"              "Q_I TENDENCY DUE TO PBL PARAMETERIZATION"     "kg kg-1 s-1"
@@ -3360,7 +3361,8 @@ package   icedepth_one   seaice_thickness_opt==1     -             state:icedept
 
 #Time series options for text output
 package   notseries             process_time_series==0                 -             -
-package   tseries               process_time_series==1                 -             state:ts_hour,ts_u,ts_v,ts_q,ts_t,ts_psfc,ts_glw,ts_gsw,ts_hfx,ts_lh,ts_tsk,ts_tslb,ts_clw,ts_rainc,ts_rainnc,ts_u_profile,ts_v_profile,ts_gph_profile,ts_th_profile,ts_p_profile,ts_w_profile
+# (29 accumulated physics and rk tendencies in momentum/thermodynamic budgets added by yueqin-5/8/24)
+package   tseries               process_time_series==1                 -             state:ts_hour,ts_u,ts_v,ts_q,ts_t,ts_psfc,ts_glw,ts_gsw,ts_hfx,ts_lh,ts_tsk,ts_tslb,ts_clw,ts_rainc,ts_rainnc,ts_u_profile,ts_v_profile,ts_gph_profile,ts_th_profile,ts_p_profile,ts_w_profile,ts_rutend_profile,ts_rutend_6thdiff_profile,ts_rutend_adv_profile,ts_rutend_cor_profile,ts_rutend_curv_profile,ts_rutend_hdiff_profile,ts_rutend_pgf_profile,ts_rutend_phys_profile,ts_rvtend_profile,ts_rvtend_6thdiff_profile,ts_rvtend_adv_profile,ts_rvtend_cor_profile,ts_rvtend_curv_profile,ts_rvtend_hdiff_profile,ts_rvtend_pgf_profile,ts_rvtend_phys_profile,ts_rwtend_profile,ts_rwtend_6thdiff_profile,ts_rwtend_adv_profile,ts_rwtend_cor_profile,ts_rwtend_curv_profile,ts_rwtend_buoy_profile,ts_thtend_profile,ts_thtend_adv_profile,ts_thtend_hdiff_profile,ts_thtend_6thdiff_profile,ts_thtend_phys_profile,ts_thtend_phys_bl_profile,ts_thtend_phys_rad_profile
 package   tseries_add_solar     process_time_series==2                 -             state:ts_hour,ts_u,ts_v,ts_q,ts_t,ts_psfc,ts_glw,ts_gsw,ts_hfx,ts_lh,ts_tsk,ts_tslb,ts_clw,ts_rainc,ts_rainnc,ts_u_profile,ts_v_profile,ts_gph_profile,ts_th_profile,ts_cldfrac2d,ts_wvp,ts_lwp,ts_iwp,ts_swp,ts_lwp_tot,ts_iwp_tot,ts_swp_tot,ts_re_qc,ts_re_qi,ts_re_qs,ts_re_qc_tot,ts_re_qi_tot,ts_re_qs_tot,ts_tau_qc,ts_tau_qi,ts_tau_qs,ts_tau_qc_tot,ts_tau_qi_tot,ts_tau_qs_tot,ts_cbaseht,ts_ctopht,ts_cbaseht_tot,ts_ctopht_tot,ts_clrnidx,ts_p_profile,ts_w_profile,ts_swdown,ts_swddni,ts_swddif,ts_swdownc,ts_swddnic,ts_swdown2,ts_swddni2,ts_swddif2,ts_swdownc2,ts_swddnic2,ts_ghi_accum
 
 # WRF-HAILCAST
