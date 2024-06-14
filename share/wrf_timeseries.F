@@ -1229,6 +1229,8 @@ SUBROUTINE write_ts( grid )
          WRITE(ts_profile_filename,'(A)') TRIM(grid%nametsloc(grid%id_tsloc(i)))//'.d00.TS'
          k = LEN_TRIM(ts_profile_filename)
          WRITE(ts_profile_filename(k-4:k-3),'(I2.2)') grid%id
+         len_trimmed = LEN_TRIM(ts_profile_filename)  ! Step 1: Determine the length of the trimmed ts_profile_filename (yueqin-6/13/24)
+	 base_filename = ts_profile_filename(1:len_trimmed-2)  ! Step 2: Extract the substring excluding the last two characters (yueqin-6/13/24)
          WRITE(ts_profile_filename(k-1:k),'(A2)') 'UU'
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
@@ -1359,8 +1361,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for u-velocity tendency profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTEND'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTEND'
+	 ts_profile_filename = TRIM(base_filename) // 'RUTEND'  ! Concatenate 'RUTEND' to the filename (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1378,8 +1381,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for u-velocity tendency from numerical errors profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTEND6THDIFF'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTEND6THDIFF'
+	 ts_profile_filename = TRIM(base_filename) // 'RUTEND6THDIFF'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1397,8 +1401,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for u-velocity tendency from advection profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDADV'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDADV'
+	 ts_profile_filename = TRIM(base_filename) // 'RUTENDADV'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1416,8 +1421,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for u-velocity tendency from Coriolis force profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDCOR'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDCOR'
+	 ts_profile_filename = TRIM(base_filename) // 'RUTENDCOR'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1435,8 +1441,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for u-velocity tendency from curvature profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDCURV'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDCURV'
+	 ts_profile_filename = TRIM(base_filename) // 'RUTENDCURV'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1454,8 +1461,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for u-velocity tendency from horizontal diffusion profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDHDIFF'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDHDIFF'
+	 ts_profile_filename = TRIM(base_filename) // 'RUTENDHDIFF'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1473,8 +1481,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for u-velocity tendency from pressure gradient force profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDPGF'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDPGF'
+	 ts_profile_filename = TRIM(base_filename) // 'RUTENDPGF'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1492,8 +1501,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for u-velocity tendency from physics profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDPHYS'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RUTENDPHYS'
+	 ts_profile_filename = TRIM(base_filename) // 'RUTENDPHYS'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1511,8 +1521,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for v-velocity tendency profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTEND'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTEND'
+	 ts_profile_filename = TRIM(base_filename) // 'RVTEND'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1530,8 +1541,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for v-velocity tendency from numerical errors profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTEND6THDIFF'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTEND6THDIFF'
+	 ts_profile_filename = TRIM(base_filename) // 'RVTEND6THDIFF'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1549,8 +1561,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for v-velocity tendency from advection profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDADV'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDADV'
+	 ts_profile_filename = TRIM(base_filename) // 'RVTENDADV'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1568,8 +1581,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for v-velocity tendency from Coriolis force profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDCOR'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDCOR'
+	 ts_profile_filename = TRIM(base_filename) // 'RVTENDCOR'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1587,8 +1601,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for v-velocity tendency from curvature profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDCURV'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDCURV'
+	 ts_profile_filename = TRIM(base_filename) // 'RVTENDCURV'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1606,8 +1621,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for v-velocity tendency from horizontal diffusion profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDHDIFF'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDHDIFF'
+	 ts_profile_filename = TRIM(base_filename) // 'RVTENDHDIFF'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1625,8 +1641,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for v-velocity tendency from pressure gradient force profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDPGF'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDPGF'
+	 ts_profile_filename = TRIM(base_filename) // 'RVTENDPGF'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1644,8 +1661,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for v-velocity tendency from physics profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDPHYS'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RVTENDPHYS'
+	 ts_profile_filename = TRIM(base_filename) // 'RVTENDPHYS'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1663,8 +1681,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for w-velocity tendency profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTEND'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTEND'
+	 ts_profile_filename = TRIM(base_filename) // 'RWTEND'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1682,8 +1701,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for w-velocity tendency from numerical errors profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTEND6THDIFF'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTEND6THDIFF'
+	 ts_profile_filename = TRIM(base_filename) // 'RWTEND6THDIFF'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1701,8 +1721,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for w-velocity tendency from advection profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDADV'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDADV'
+	 ts_profile_filename = TRIM(base_filename) // 'RWTENDADV'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1720,8 +1741,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for w-velocity tendency from Coriolis force profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDCOR'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDCOR'
+	 ts_profile_filename = TRIM(base_filename) // 'RWTENDCOR'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1739,8 +1761,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for w-velocity tendency from curvature profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDCURV'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDCURV'
+	 ts_profile_filename = TRIM(base_filename) // 'RWTENDCURV'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1758,8 +1781,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for w-velocity tendency from buoyancy profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDBUOY'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'RWTENDBUOY'
+	 ts_profile_filename = TRIM(base_filename) // 'RWTENDBUOY'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1777,8 +1801,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for theta tendency profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTEND'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTEND'
+	 ts_profile_filename = TRIM(base_filename) // 'THTEND'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1796,8 +1821,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for theta tendency from numerical errors profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTEND6THDIFF'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTEND6THDIFF'
+	 ts_profile_filename = TRIM(base_filename) // 'THTEND6THDIFF'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1815,8 +1841,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for theta tendency from advection profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDADV'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDADV'
+	 ts_profile_filename = TRIM(base_filename) // 'THTENDADV'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1834,8 +1861,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for theta tendency from horizontal diffusion profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDHDIFF'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDHDIFF'
+	 ts_profile_filename = TRIM(base_filename) // 'THTENDHDIFF'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1853,8 +1881,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for theta tendency from physics profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDPHYS'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDPHYS'
+	 ts_profile_filename = TRIM(base_filename) // 'THTENDPHYS'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1872,8 +1901,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for theta tendency from pbl physics profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDPHYSBL'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDPHYSBL'
+	 ts_profile_filename = TRIM(base_filename) // 'THTENDPHYSBL'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
@@ -1891,8 +1921,9 @@ SUBROUTINE write_ts( grid )
             CALL wrf_error_fatal('Error in write_ts: could not find a free Fortran unit.')
             END IF
          !Recreate filename for theta tendency from radiation physics profiles (yueqin-4/17/24)
-         k = LEN_TRIM(ts_profile_filename)
-         WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDPHYSRAD'
+         !k = LEN_TRIM(ts_profile_filename)
+         !WRITE(ts_profile_filename(k-1:k),'(A2)') 'THTENDPHYSRAD'
+	 ts_profile_filename = TRIM(base_filename) // 'THTENDPHYSRAD'  ! (added by yueqin-6/13/24)
          
          OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), STATUS='unknown', POSITION='append', FORM='formatted')
 
