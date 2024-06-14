@@ -733,6 +733,10 @@ SUBROUTINE write_ts( grid )
    CHARACTER (LEN=24) :: ts_profile_filename
    CHARACTER (LEN=26) :: profile_format
 
+   ! Declare variables (yueqin-6/13/24)
+   INTEGER :: len_trimmed
+   CHARACTER(LEN=24) :: base_filename  ! Adjust length as needed
+
    IF ( grid%ntsloc_domain .LE. 0 ) RETURN
 
 #if ((EM_CORE == 1) && (DA_CORE != 1))
