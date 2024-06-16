@@ -253,7 +253,8 @@ SUBROUTINE calc_ts_locations( grid )
                WRITE(grid%ts_filename(k),'(A)') TRIM(grid%nametsloc(grid%id_tsloc(k)))//'.d00.TS'
                i = LEN_TRIM(grid%ts_filename(k))
                WRITE(grid%ts_filename(k)(i-4:i-3),'(I2.2)') grid%id
-               OPEN(UNIT=iunit, FILE=TRIM(grid%ts_filename(k)), FORM='FORMATTED', STATUS='REPLACE')
+               ! Changed STATUS='REPLACE' to STATUS='UNKNOWN' and POSITION='APPEND' to prevent overwriting. (yueqin-6/14/24)
+               OPEN(UNIT=iunit, FILE=TRIM(grid%ts_filename(k)), FORM='FORMATTED', STATUS='UNKNOWN', POSITION='APPEND')
 #if (EM_CORE == 1)
                IF ( .NOT. grid%tslist_ij ) THEN 
                   WRITE(UNIT=iunit, &
@@ -294,7 +295,8 @@ SUBROUTINE calc_ts_locations( grid )
                   END IF
                   i = LEN_TRIM(ts_profile_filename)
                   WRITE(ts_profile_filename(i-1:i),'(A2)') ts_file_endings(j)
-                  OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), FORM='FORMATTED', STATUS='REPLACE')
+                  ! Changed STATUS='REPLACE' to STATUS='UNKNOWN' and POSITION='APPEND' to prevent overwriting. (yueqin-6/14/24)
+                  OPEN(UNIT=iunit, FILE=TRIM(ts_profile_filename), FORM='FORMATTED', STATUS='UNKNOWN', POSITION='APPEND')
 #if (EM_CORE == 1)
                   IF ( .NOT. grid%tslist_ij ) THEN 
                      WRITE(UNIT=iunit, &
