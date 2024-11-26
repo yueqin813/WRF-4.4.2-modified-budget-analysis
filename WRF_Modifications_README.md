@@ -2,7 +2,7 @@
 
 ## Description
 
-This version of WRF has been modified to output accumulated physics and RK tendencies in momentum and thermodynamic budgets.
+This version of WRF has been modified to output instantaneous and accumulated physics and RK tendencies in momentum and thermodynamic budgets.
 
 ## Modification Details
 
