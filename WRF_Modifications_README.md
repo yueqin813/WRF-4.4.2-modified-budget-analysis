@@ -9,7 +9,7 @@ This version of WRF has been modified to output instantaneous and accumulated ph
 **Date:** 01/04/2024\
 **Contributor:** Yue Qin ([yueqin@bu.edu](mailto\:yueqin@bu.edu))
 
-### Registry Changes
+### Registry Changes Example
 
 The following modifications have been made in `Registry/EM_COMMON`:
 
